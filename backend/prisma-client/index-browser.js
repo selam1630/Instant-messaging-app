@@ -124,7 +124,7 @@ exports.Prisma.MessageScalarFieldEnum = {
   conversationId: 'conversationId',
   senderId: 'senderId',
   content: 'content',
-  mediaIds: 'mediaIds',
+  mediaUrls: 'mediaUrls',
   timestamp: 'timestamp',
   status: 'status'
 };
