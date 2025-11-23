@@ -16,51 +16,66 @@ const { width, height } = Dimensions.get('window');
 const LandingPage: React.FC = () => {
   return (
     <LinearGradient
-      colors={['#4B0082', '#8A2BE2', '#DA70D6']} // Deep Purple to Medium Orchid
-      style={styles.container}>
+      colors={['#3b0066', '#7b2cbf', '#c77dff']}
+      style={styles.container}
+    >
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.contentContainer}>
-          {/* Logo Section */}
+
+          {/* Logo */}
           <View style={styles.logoContainer}>
-            {/* You can replace this with your actual app logo */}
-            <View style={styles.placeholderLogo}>
-              <Text style={styles.placeholderLogoText}>IM</Text>
+            <View style={styles.logoBox}>
+              <Text style={styles.logoText}>IM</Text>
             </View>
           </View>
 
-          {/* Text Section */}
+          {/* Title */}
           <View style={styles.textSection}>
             <Text style={styles.mainTitle}>CONNECT INSTANTLY</Text>
             <Text style={styles.subTitle}>
-              Seamless Messaging, Securely Delivered
+              Fast, Secure & Seamless Messaging for Everyone
             </Text>
           </View>
 
-          {/* Image/Mockup Section */}
+          {/* Images */}
           <View style={styles.imageSection}>
             <Image
               source={{
                 uri: 'https://via.placeholder.com/250x500/8A2BE2/FFFFFF?text=Chat+Screen+1',
-              }} // Placeholder for your chat screen 1
-              style={[styles.mockupImage, styles.mockupImageLeft]}
+              }}
+              style={[styles.mockupImage, styles.mockupLeft]}
             />
+
             <Image
               source={{
                 uri: 'https://via.placeholder.com/250x500/9932CC/FFFFFF?text=Chat+Screen+2',
-              }} // Placeholder for your chat screen 2
-              style={[styles.mockupImage, styles.mockupImageRight]}
+              }}
+              style={[styles.mockupImage, styles.mockupRight]}
             />
           </View>
 
-          {/* App Store Badges (Optional - You can add actual images) */}
-          <View style={styles.appBadgeContainer}>
-            <TouchableOpacity style={styles.appBadge}>
-              <Text style={styles.appBadgeText}>Download on the App Store</Text>
+          {/* Auth Buttons */}
+          <View style={styles.authButtons}>
+            <TouchableOpacity style={styles.signInBtn}>
+              <Text style={styles.signInText}>Sign In</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.appBadge}>
-              <Text style={styles.appBadgeText}>Get it on Google Play</Text>
+
+            <TouchableOpacity style={styles.signUpBtn}>
+              <Text style={styles.signUpText}>Create Account</Text>
             </TouchableOpacity>
           </View>
+
+          {/* Store Buttons */}
+          <View style={styles.appBadgeContainer}>
+            <TouchableOpacity style={styles.appBadge}>
+              <Text style={styles.appBadgeText}>App Store</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.appBadge}>
+              <Text style={styles.appBadgeText}>Google Play</Text>
+            </TouchableOpacity>
+          </View>
+
         </View>
       </SafeAreaView>
     </LinearGradient>
@@ -68,113 +83,133 @@ const LandingPage: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
+  container: { flex: 1 },
+  safeArea: { flex: 1 },
+
   contentContainer: {
     flex: 1,
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: height * 0.05,
   },
+
+  /* LOGO */
   logoContainer: {
-    marginBottom: 20,
-    marginTop: Platform.OS === 'android' ? 20 : 0, // Adjust for Android status bar
+    marginTop: Platform.OS === 'android' ? 20 : 0,
   },
-  placeholderLogo: {
-    width: 80,
-    height: 80,
-    borderRadius: 15,
-    backgroundColor: '#9370DB', // Medium Purple
+  logoBox: {
+    width: 90,
+    height: 90,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
+    backgroundColor: 'rgba(255,255,255,0.18)', // Nice soft transparency
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
   },
-  placeholderLogoText: {
-    fontSize: 40,
-    fontWeight: 'bold',
+  logoText: {
+    fontSize: 42,
     color: 'white',
+    fontWeight: '800',
   },
+
+  /* Text */
   textSection: {
     alignItems: 'center',
-    marginBottom: 40,
+    paddingHorizontal: 20,
   },
   mainTitle: {
-    fontSize: width * 0.08,
-    fontWeight: 'bold',
+    fontSize: width * 0.085,
     color: 'white',
+    fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 10,
-    letterSpacing: 1.5,
-    textShadowColor: 'rgba(0, 0, 0, 0.4)',
-    textShadowOffset: { width: -1, height: 1 },
-    textShadowRadius: 10,
+    letterSpacing: 1.2,
   },
   subTitle: {
     fontSize: width * 0.045,
-    color: '#E0BBE4', // Light purple
+    color: '#f0d7ff',
     textAlign: 'center',
-    paddingHorizontal: 20,
-    lineHeight: 24,
-    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-    textShadowOffset: { width: -0.5, height: 0.5 },
-    textShadowRadius: 8,
+    marginTop: 8,
+    opacity: 0.9,
   },
+
+  /* Images */
   imageSection: {
-    flexDirection: 'row',
+    height: height * 0.38,
+    width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    width: '100%',
-    marginBottom: 40,
-    height: height * 0.4, // Make the image section take up more vertical space
   },
   mockupImage: {
     width: width * 0.38,
-    height: height * 0.38 * (500 / 250), // Maintain aspect ratio
+    height: height * 0.38 * (500 / 250),
     resizeMode: 'contain',
-    borderRadius: 25,
-    borderColor: 'rgba(255,255,255,0.6)',
+    borderRadius: 22,
     borderWidth: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.6,
-    shadowRadius: 15,
-    elevation: 20,
-    position: 'absolute', // Allow overlapping
+    borderColor: 'rgba(255,255,255,0.4)',
+    position: 'absolute',
   },
-  mockupImageLeft: {
-    left: width * 0.1,
-    transform: [{ rotate: '-10deg' }],
-    zIndex: 1, // Bring to front
+  mockupLeft: {
+    left: width * 0.12,
+    transform: [{ rotate: '-8deg' }],
   },
-  mockupImageRight: {
-    right: width * 0.1,
-    transform: [{ rotate: '10deg' }],
-    zIndex: 0, // Keep slightly behind
+  mockupRight: {
+    right: width * 0.12,
+    transform: [{ rotate: '8deg' }],
   },
+
+  /* Buttons */
+  authButtons: {
+    width: '85%',
+    marginTop: 25,
+    alignItems: 'center',
+  },
+
+  signInBtn: {
+    width: '100%',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingVertical: 14,
+    borderRadius: 30,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.4)',
+  },
+  signInText: {
+    textAlign: 'center',
+    color: 'white',
+    fontSize: 17,
+    fontWeight: '600',
+  },
+
+  signUpBtn: {
+    width: '100%',
+    backgroundColor: '#ffffff',
+    paddingVertical: 15,
+    borderRadius: 30,
+  },
+  signUpText: {
+    textAlign: 'center',
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#7b2cbf',
+  },
+
+  /* Store Buttons */
   appBadgeContainer: {
     flexDirection: 'row',
-    marginTop: 20,
+    marginTop: 10,
   },
   appBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 30,
-    marginHorizontal: 10,
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 25,
+    marginHorizontal: 8,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
+    borderColor: 'rgba(255,255,255,0.4)',
   },
   appBadgeText: {
     color: 'white',
-    fontSize: 14,
     fontWeight: '600',
   },
 });
