@@ -3,7 +3,6 @@ import { prisma } from "../config/db";
 import { hashPassword, comparePasswords, generateToken } from "../utils/auth";
 import { Prisma } from "src/generated/client";
 
-// REGISTER
 export const register = async (req: Request, res: Response) => {
   const { name, email, password, profileImage } = req.body;
 
