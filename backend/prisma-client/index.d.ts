@@ -44,6 +44,9 @@ export type ConversationPayload<ExtArgs extends $Extensions.Args = $Extensions.D
   scalars: $Extensions.GetResult<{
     id: string
     type: string
+    /**
+     * FIXED: participantIds should be plain strings, not ObjectId fields
+     */
     participantIds: string[]
     lastMessageId: string | null
     createdAt: Date
