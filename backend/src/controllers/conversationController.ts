@@ -1,9 +1,5 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/db";
-
-/**
- * Get or create a 1-on-1 private conversation between two users.
- */
 export const getOrCreateConversation = async (req: Request, res: Response) => {
   try {
     const { user1, user2 } = req.query;
@@ -16,13 +12,11 @@ export const getOrCreateConversation = async (req: Request, res: Response) => {
 
     const userA = String(user1);
     const userB = String(user2);
-
-    // Step 1: Look for existing conversation
     const existingConversation = await prisma.conversation.findFirst({
       where: {
         type: "private",
         participantIds: {
-          hasEvery: [userA, userB], // Both users must be participants
+          hasEvery: [userA, userB], 
         },
       },
     });
@@ -33,8 +27,6 @@ export const getOrCreateConversation = async (req: Request, res: Response) => {
         message: "Existing conversation found",
       });
     }
-
-    // Step 2: Create new conversation
     const newConversation = await prisma.conversation.create({
       data: {
         type: "private",
@@ -52,5 +44,31 @@ export const getOrCreateConversation = async (req: Request, res: Response) => {
     return res.status(500).json({
       message: "Server error creating conversation",
     });
+  }
+};
+
+export const getUserConversations = async (req: Request, res: Response) => {
+  try {
+    const userId = String(req.params.userId);
+
+    const conversations = await prisma.conversation.findMany({
+      where: {
+        participantIds: { has: userId }
+      },
+      include: {
+        messages: {
+          orderBy: { timestamp: "desc" },
+          take: 1
+        }
+      },
+      orderBy: {
+        updatedAt: "desc"
+      }
+    });
+
+    return res.json({ conversations });
+  } catch (error) {
+    console.error("Fetch conversations failed", error);
+    return res.status(500).json({ message: "Server error" });
   }
 };

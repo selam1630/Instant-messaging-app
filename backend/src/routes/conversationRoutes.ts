@@ -1,8 +1,9 @@
 import express from "express";
-import { getOrCreateConversation } from "../controllers/conversationController";
+import { getOrCreateConversation, getUserConversations } from "../controllers/conversationController";
 
 const router = express.Router();
+router.get("/list/:userId", getUserConversations);
 
 router.get("/get-or-create", getOrCreateConversation);
 
-export default router;  // ✅ Must be default export
+export default router;  
