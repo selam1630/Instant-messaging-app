@@ -6,6 +6,7 @@ import { Server as SocketIOServer } from "socket.io";
 import { prisma } from "./config/db";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
+import conversationRoutes from "./routes/conversationRoutes";
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ app.use(cors());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/conversation", conversationRoutes);
+
 
 app.get("/", (req, res) => {
   res.send("Instant Messaging API is running");
