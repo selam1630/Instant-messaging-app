@@ -42,6 +42,7 @@ model Message {
   mediaUrls      String[]
   timestamp      DateTime      @default(now())
   status         String
+  receiverId     String        @db.ObjectId
 
   conversation  Conversation   @relation(fields: [conversationId], references: [id], name: "ConversationMessages")
   sender        User           @relation(fields: [senderId], references: [id], name: "UserMessages")

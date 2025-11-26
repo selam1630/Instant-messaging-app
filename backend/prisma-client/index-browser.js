@@ -126,7 +126,8 @@ exports.Prisma.MessageScalarFieldEnum = {
   content: 'content',
   mediaUrls: 'mediaUrls',
   timestamp: 'timestamp',
-  status: 'status'
+  status: 'status',
+  receiverId: 'receiverId'
 };
 
 exports.Prisma.SortOrder = {

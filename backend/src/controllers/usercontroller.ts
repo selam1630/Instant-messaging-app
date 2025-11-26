@@ -8,7 +8,6 @@ export const getAllUsers = async (req: Request, res: Response) => {
         id: true,
         name: true,
         email: true,
-        profileImage: true, // if you have it
       },
     });
 

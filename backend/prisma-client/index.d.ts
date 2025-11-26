@@ -74,6 +74,7 @@ export type MessagePayload<ExtArgs extends $Extensions.Args = $Extensions.Defaul
     mediaUrls: string[]
     timestamp: Date
     status: string
+    receiverId: string
   }, ExtArgs["result"]["message"]>
   composites: {}
 }
@@ -3234,6 +3235,7 @@ export namespace Prisma {
     content: string | null
     timestamp: Date | null
     status: string | null
+    receiverId: string | null
   }
 
   export type MessageMaxAggregateOutputType = {
@@ -3243,6 +3245,7 @@ export namespace Prisma {
     content: string | null
     timestamp: Date | null
     status: string | null
+    receiverId: string | null
   }
 
   export type MessageCountAggregateOutputType = {
@@ -3253,6 +3256,7 @@ export namespace Prisma {
     mediaUrls: number
     timestamp: number
     status: number
+    receiverId: number
     _all: number
   }
 
@@ -3264,6 +3268,7 @@ export namespace Prisma {
     content?: true
     timestamp?: true
     status?: true
+    receiverId?: true
   }
 
   export type MessageMaxAggregateInputType = {
@@ -3273,6 +3278,7 @@ export namespace Prisma {
     content?: true
     timestamp?: true
     status?: true
+    receiverId?: true
   }
 
   export type MessageCountAggregateInputType = {
@@ -3283,6 +3289,7 @@ export namespace Prisma {
     mediaUrls?: true
     timestamp?: true
     status?: true
+    receiverId?: true
     _all?: true
   }
 
@@ -3367,6 +3374,7 @@ export namespace Prisma {
     mediaUrls: string[]
     timestamp: Date
     status: string
+    receiverId: string
     _count: MessageCountAggregateOutputType | null
     _min: MessageMinAggregateOutputType | null
     _max: MessageMaxAggregateOutputType | null
@@ -3394,6 +3402,7 @@ export namespace Prisma {
     mediaUrls?: boolean
     timestamp?: boolean
     status?: boolean
+    receiverId?: boolean
     conversation?: boolean | ConversationArgs<ExtArgs>
     sender?: boolean | UserArgs<ExtArgs>
   }, ExtArgs["result"]["message"]>
@@ -3406,6 +3415,7 @@ export namespace Prisma {
     mediaUrls?: boolean
     timestamp?: boolean
     status?: boolean
+    receiverId?: boolean
   }
 
   export type MessageInclude<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
@@ -4252,7 +4262,8 @@ export namespace Prisma {
     content: 'content',
     mediaUrls: 'mediaUrls',
     timestamp: 'timestamp',
-    status: 'status'
+    status: 'status',
+    receiverId: 'receiverId'
   };
 
   export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
@@ -4405,6 +4416,7 @@ export namespace Prisma {
     mediaUrls?: StringNullableListFilter
     timestamp?: DateTimeFilter | Date | string
     status?: StringFilter | string
+    receiverId?: StringFilter | string
     conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
     sender?: XOR<UserRelationFilter, UserWhereInput>
   }
@@ -4417,6 +4429,7 @@ export namespace Prisma {
     mediaUrls?: SortOrder
     timestamp?: SortOrder
     status?: SortOrder
+    receiverId?: SortOrder
     conversation?: ConversationOrderByWithRelationInput
     sender?: UserOrderByWithRelationInput
   }
@@ -4433,6 +4446,7 @@ export namespace Prisma {
     mediaUrls?: SortOrder
     timestamp?: SortOrder
     status?: SortOrder
+    receiverId?: SortOrder
     _count?: MessageCountOrderByAggregateInput
     _max?: MessageMaxOrderByAggregateInput
     _min?: MessageMinOrderByAggregateInput
@@ -4449,6 +4463,7 @@ export namespace Prisma {
     mediaUrls?: StringNullableListFilter
     timestamp?: DateTimeWithAggregatesFilter | Date | string
     status?: StringWithAggregatesFilter | string
+    receiverId?: StringWithAggregatesFilter | string
   }
 
   export type UserCreateInput = {
@@ -4604,6 +4619,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
+    receiverId: string
     conversation: ConversationCreateNestedOneWithoutMessagesInput
     sender: UserCreateNestedOneWithoutMessagesSentInput
   }
@@ -4616,6 +4632,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
+    receiverId: string
   }
 
   export type MessageUpdateInput = {
@@ -4623,6 +4640,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
     sender?: UserUpdateOneRequiredWithoutMessagesSentNestedInput
   }
@@ -4634,6 +4652,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
   }
 
   export type MessageCreateManyInput = {
@@ -4644,6 +4663,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
+    receiverId: string
   }
 
   export type MessageUpdateManyMutationInput = {
@@ -4651,6 +4671,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
   }
 
   export type MessageUncheckedUpdateManyInput = {
@@ -4660,6 +4681,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
   }
 
   export type StringFilter = {
@@ -4879,6 +4901,7 @@ export namespace Prisma {
     mediaUrls?: SortOrder
     timestamp?: SortOrder
     status?: SortOrder
+    receiverId?: SortOrder
   }
 
   export type MessageMaxOrderByAggregateInput = {
@@ -4888,6 +4911,7 @@ export namespace Prisma {
     content?: SortOrder
     timestamp?: SortOrder
     status?: SortOrder
+    receiverId?: SortOrder
   }
 
   export type MessageMinOrderByAggregateInput = {
@@ -4897,6 +4921,7 @@ export namespace Prisma {
     content?: SortOrder
     timestamp?: SortOrder
     status?: SortOrder
+    receiverId?: SortOrder
   }
 
   export type MessageCreateNestedManyWithoutSenderInput = {
@@ -5192,6 +5217,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
+    receiverId: string
     conversation: ConversationCreateNestedOneWithoutMessagesInput
   }
 
@@ -5202,6 +5228,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
+    receiverId: string
   }
 
   export type MessageCreateOrConnectWithoutSenderInput = {
@@ -5240,6 +5267,7 @@ export namespace Prisma {
     mediaUrls?: StringNullableListFilter
     timestamp?: DateTimeFilter | Date | string
     status?: StringFilter | string
+    receiverId?: StringFilter | string
   }
 
   export type MessageCreateWithoutConversationInput = {
@@ -5248,6 +5276,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
+    receiverId: string
     sender: UserCreateNestedOneWithoutMessagesSentInput
   }
 
@@ -5258,6 +5287,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
+    receiverId: string
   }
 
   export type MessageCreateOrConnectWithoutConversationInput = {
@@ -5392,6 +5422,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
+    receiverId: string
   }
 
   export type MessageUpdateWithoutSenderInput = {
@@ -5399,6 +5430,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
   }
 
@@ -5408,6 +5440,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
   }
 
   export type MessageUncheckedUpdateManyWithoutMessagesSentInput = {
@@ -5416,6 +5449,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
   }
 
   export type MessageCreateManyConversationInput = {
@@ -5425,6 +5459,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
+    receiverId: string
   }
 
   export type MessageUpdateWithoutConversationInput = {
@@ -5432,6 +5467,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
     sender?: UserUpdateOneRequiredWithoutMessagesSentNestedInput
   }
 
@@ -5441,6 +5477,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
   }
 
   export type MessageUncheckedUpdateManyWithoutMessagesInput = {
@@ -5449,6 +5486,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
+    receiverId?: StringFieldUpdateOperationsInput | string
   }
 
 
