@@ -13,27 +13,16 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(cors());
-
-// Mount routers
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/conversation", conversationRoutes);
 
-// Test route
 app.get("/", (req, res) => {
   res.send("Instant Messaging API is running");
 });
-
-// Create HTTP server
 const server = http.createServer(app);
-
-// Setup Socket.IO
 const io = new SocketIOServer(server, { cors: { origin: "*" } });
-
-// Track online users
 const onlineUsers: Map<string, string> = new Map();
-
-// Helper to emit a message to a specific user
 const emitMessageToUser = (userId: string, event: string, data: any) => {
   const socketId = onlineUsers.get(userId);
   if (socketId) io.to(socketId).emit(event, data);
@@ -41,8 +30,6 @@ const emitMessageToUser = (userId: string, event: string, data: any) => {
 
 io.on("connection", (socket) => {
   console.log("⚡ User connected:", socket.id);
-
-  // User comes online
   socket.on("user_online", async (userId: string) => {
     onlineUsers.set(userId, socket.id);
     console.log(`🟢 User online: ${userId}`);
@@ -54,13 +41,9 @@ io.on("connection", (socket) => {
 
     io.emit("online_users", Array.from(onlineUsers.keys()));
   });
-
-  // Sending a message
   socket.on("send_message", async (data) => {
     try {
       const { conversationId, senderId, receiverId, content } = data;
-
-      // Save message to DB
       const newMessage = await prisma.message.create({
         data: {
           conversationId,
@@ -71,14 +54,8 @@ io.on("connection", (socket) => {
           status: "sent",
         },
       });
-
-      // Emit message to sender only once
       socket.emit("receive_message", newMessage);
-
-      // Emit message to receiver if online
       emitMessageToUser(receiverId, "receive_message", newMessage);
-
-      // Mark as delivered if receiver is online
       if (onlineUsers.has(receiverId)) {
         await prisma.message.update({
           where: { id: newMessage.id },
@@ -89,8 +66,6 @@ io.on("connection", (socket) => {
       console.error("Error sending message:", err);
     }
   });
-
-  // User disconnects
   socket.on("disconnect", async () => {
     console.log("🔴 User disconnected:", socket.id);
 
@@ -110,8 +85,6 @@ io.on("connection", (socket) => {
     }
   });
 });
-
-// Test database connection
 async function testDatabaseConnection() {
   try {
     await prisma.$connect();
