@@ -28,11 +28,7 @@ const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: { origin: "*" },
 });
-
-// Map<userId, socketId>
 const onlineUsers: Map<string, string> = new Map();
-
-// Helper to emit message to specific online user
 const emitMessageToUser = (userId: string, event: string, data: any) => {
   const socketId = onlineUsers.get(userId);
   if (socketId) io.to(socketId).emit(event, data);
@@ -40,23 +36,17 @@ const emitMessageToUser = (userId: string, event: string, data: any) => {
 
 io.on("connection", (socket) => {
   console.log("⚡ User connected:", socket.id);
-
-  // User Online Event
   socket.on("user_online", async (userId: string) => {
     onlineUsers.set(userId, socket.id);
     console.log(`🟢 User online: ${userId}`);
 
-    // IMPORTANT FIX: Do NOT update lastSeen here
     await prisma.user.update({
       where: { id: userId },
       data: { onlineStatus: "online" },
     });
 
-    // Send fresh online users list
     io.emit("online_users", Array.from(onlineUsers.keys()));
   });
-
-  // Send Message Event
   socket.on("send_message", async (data) => {
     try {
       const { conversationId, senderId, receiverId, content } = data;
@@ -71,14 +61,8 @@ io.on("connection", (socket) => {
           status: "sent",
         },
       });
-
-      // Send back to sender
       socket.emit("receive_message", newMessage);
-
-      // Send to receiver (if online)
       emitMessageToUser(receiverId, "receive_message", newMessage);
-
-      // Mark as delivered if receiver is online
       if (onlineUsers.has(receiverId)) {
         await prisma.message.update({
           where: { id: newMessage.id },
@@ -89,8 +73,22 @@ io.on("connection", (socket) => {
       console.error("Error sending message:", err);
     }
   });
+  socket.on("mark_as_read", async ({ messageIds, readerId, senderId }) => {
+    try {
+      console.log("📘 Marking messages as READ:", messageIds);
 
-  // User Disconnect Event
+      await prisma.message.updateMany({
+        where: { id: { in: messageIds } },
+        data: { status: "read" },
+      });
+      emitMessageToUser(senderId, "messages_read", {
+        messageIds,
+        readerId,
+      });
+    } catch (err) {
+      console.error("Error marking messages as read:", err);
+    }
+  });
   socket.on("disconnect", async () => {
     console.log("🔴 User disconnected:", socket.id);
 
@@ -101,12 +99,11 @@ io.on("connection", (socket) => {
     if (userId) {
       onlineUsers.delete(userId);
 
-      // Correct: We ONLY update lastSeen when user disconnects
       await prisma.user.update({
         where: { id: userId },
         data: {
           onlineStatus: "offline",
-          lastSeen: new Date(), // correct place
+          lastSeen: new Date(), 
         },
       });
 
@@ -114,7 +111,6 @@ io.on("connection", (socket) => {
     }
   });
 });
-
 async function testDatabaseConnection() {
   try {
     await prisma.$connect();

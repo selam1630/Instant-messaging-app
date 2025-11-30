@@ -39,3 +39,15 @@ export const getUserStatus = async (req: Request, res: Response) => {
   }
 };
 
+export const getOfflineUsersStatus = async (req: Request, res: Response) => {
+  try {
+    const offlineUsers = await prisma.user.findMany({
+      where: { onlineStatus: "offline" },
+      select: { id: true, lastSeen: true },
+    });
+    return res.json(offlineUsers);
+  } catch (err) {
+    console.error("Error fetching offline users:", err);
+    return res.status(500).json({ message: "Failed to fetch offline user statuses" });
+  }
+};
