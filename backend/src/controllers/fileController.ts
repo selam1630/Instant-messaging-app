@@ -1,47 +1,34 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/db";
 
-// Extend Request to include `file` (for single upload)
-interface MulterRequest extends Request {
-  file: {
-    fieldname: string;
-    originalname: string;
-    encoding: string;
-    mimetype: string;
-    size: number;
-    destination: string;
-    filename: string;
-    path: string;
-    buffer?: Buffer;
-  };
-  // For multiple files: files?: MulterRequest["file"][];
-}
-
-// Upload a single file and save message
-export const uploadFile = async (req: MulterRequest, res: Response) => {
+export const uploadFileMessage = async (req: Request, res: Response) => {
   try {
     const { conversationId, senderId, receiverId } = req.body;
-    const file = req.file;
 
-    if (!file) {
-      return res.status(400).json({ message: "File is missing" });
+    if (!req.files || !(req.files instanceof Array) || req.files.length === 0) {
+      return res.status(400).json({ error: "No file uploaded" });
     }
 
-    // Save message in DB
+    const mediaUrls = req.files.map((file) => `/uploads/${file.filename}`);
+
     const message = await prisma.message.create({
       data: {
         conversationId,
         senderId,
         receiverId,
-        content: "", // optional text
-        mediaUrls: [file.path], // store uploaded file path
+        content: null,
+        mediaUrls,
         status: "sent",
       },
     });
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { lastMessageId: message.id },
+    });
 
-    return res.json(message);
+    return res.json({ success: true, message });
   } catch (err) {
-    console.error("Error uploading file:", err);
-    return res.status(500).json({ message: "Failed to upload file" });
+    console.error(err);
+    res.status(500).json({ error: "Error uploading file" });
   }
 };

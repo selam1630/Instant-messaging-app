@@ -8,6 +8,9 @@ import { prisma } from "./config/db";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userroutes";
 import conversationRoutes from "./routes/conversationRoutes";
+import fileRoutes from "./routes/fileRoutes";
+import path from "path";
+
 
 dotenv.config();
 
@@ -18,6 +21,9 @@ app.use(cors());
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/conversation", conversationRoutes);
+app.use("/api/files", fileRoutes);
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
 
 app.get("/", (req, res) => {
   res.send("Instant Messaging API is running");
