@@ -10,7 +10,7 @@ import userRoutes from "./routes/userroutes";
 import conversationRoutes from "./routes/conversationRoutes";
 import fileRoutes from "./routes/fileRoutes";
 import path from "path";
-
+import otpRoutes from "./routes/otpRoutes";
 
 dotenv.config();
 
@@ -23,6 +23,8 @@ app.use("/api/user", userRoutes);
 app.use("/api/conversation", conversationRoutes);
 app.use("/api/files", fileRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use("/api/otp", otpRoutes);
+
 
 
 app.get("/", (req, res) => {

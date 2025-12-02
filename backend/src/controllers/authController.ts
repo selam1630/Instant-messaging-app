@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { prisma } from "../config/db";
 import { hashPassword, comparePasswords, generateToken } from "../utils/auth";
 import { Prisma } from "src/generated/client";
-
 export const register = async (req: Request, res: Response) => {
   const { name, email, password, profileImage } = req.body;
 
@@ -16,16 +15,28 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Email already registered" });
     }
 
+    // Check if email is verified via OTP
+    const verified = await prisma.user.findFirst({
+      where: { email, isVerified: true },
+    });
+
+    if (!verified) {
+      return res.status(400).json({
+        message: "Email not verified. Please verify OTP first.",
+      });
+    }
+
     const passwordHash = await hashPassword(password);
 
-   const newUser = await prisma.user.create({
-  data: {
-    name,
-    email,
-    passwordHash,
-    profileImage,
-  } as Prisma.UserUncheckedCreateInput,
-});
+    const newUser = await prisma.user.create({
+      data: {
+        name,
+        email,
+        passwordHash,
+        profileImage,
+        isVerified: true,
+      },
+    });
 
     const token = generateToken({ userId: newUser.id });
 
@@ -44,6 +55,7 @@ export const register = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 

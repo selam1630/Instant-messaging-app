@@ -107,7 +107,8 @@ exports.Prisma.UserScalarFieldEnum = {
   onlineStatus: 'onlineStatus',
   lastSeen: 'lastSeen',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  isVerified: 'isVerified'
 };
 
 exports.Prisma.ConversationScalarFieldEnum = {
@@ -130,6 +131,14 @@ exports.Prisma.MessageScalarFieldEnum = {
   receiverId: 'receiverId'
 };
 
+exports.Prisma.OTPScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  code: 'code',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -144,7 +153,8 @@ exports.Prisma.QueryMode = {
 exports.Prisma.ModelName = {
   User: 'User',
   Conversation: 'Conversation',
-  Message: 'Message'
+  Message: 'Message',
+  OTP: 'OTP'
 };
 
 /**
