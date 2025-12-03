@@ -7,15 +7,15 @@ async function testEmail() {
       port: 587,
       secure: false,
       auth: {
-        user: "9d2545001@smtp-brevo.com ", // Replace with your Brevo SMTP user
-        pass: "RpTgm8SMyJUYAk24", // Replace with your Brevo SMTP password
+        user: "9d2545001@smtp-brevo.com",
+        pass: "RpTgm8SMyJUYAk24",
       },
     });
 
     const info = await transporter.sendMail({
-      from: '"Instant Messaging App" <9d2545001@smtp-brevo.com>', // Replace with SMTP user
-      to: "your_email@gmail.com", // Replace with your email to receive test
-      subject: "s1649514@gmail.com",
+      from: '"Instant Messaging App" <s1649514@gmail.com>',  
+      to: "sfikru64@gmail.com",
+      subject: "Test Email",
       text: "Hello! This is a test email from nodemailer.",
     });
 
