@@ -2,11 +2,11 @@ import { Request, Response } from "express";
 import { prisma } from "../config/db";
 import { sendOTPEmail } from "../utils/mailer";
 
-// Helper to generate a 6-digit numeric OTP
+// Generate a 6-digit numeric OTP
 const generateNumericOTP = (length: number) => {
   let otp = "";
   for (let i = 0; i < length; i++) {
-    otp += Math.floor(Math.random() * 10); // random digit 0-9
+    otp += Math.floor(Math.random() * 10); // only digits
   }
   return otp;
 };
@@ -21,17 +21,17 @@ export const sendOTP = async (req: Request, res: Response) => {
     const otp = generateNumericOTP(6); // 6-digit numeric OTP
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    // Save OTP in database
+    // Save OTP in DB
     await prisma.oTP.create({
       data: { email, code: otp, expiresAt },
     });
 
-    // Send OTP via email
+    // Send numeric OTP via email
     await sendOTPEmail(email, otp);
 
     res.status(200).json({ message: "OTP sent successfully" });
   } catch (err) {
-    console.error(err);
+    console.error("Error sending OTP:", err);
     res.status(500).json({ message: "Failed to send OTP" });
   }
 };
@@ -51,9 +51,8 @@ export const verifyOTP = async (req: Request, res: Response) => {
 
     if (!record) return res.status(400).json({ message: "Invalid OTP" });
 
-    if (record.expiresAt < new Date()) {
+    if (record.expiresAt < new Date())
       return res.status(400).json({ message: "OTP expired" });
-    }
 
     // Mark user as verified
     await prisma.user.updateMany({
@@ -66,7 +65,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
 
     res.status(200).json({ message: "OTP verified successfully" });
   } catch (err) {
-    console.error(err);
+    console.error("Error verifying OTP:", err);
     res.status(500).json({ message: "Failed to verify OTP" });
   }
 };
