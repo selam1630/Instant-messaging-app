@@ -21,7 +21,7 @@ export type UserPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultAr
     id: string
     name: string | null
     email: string
-    passwordHash: string
+    passwordHash: string | null
     profileImage: string | null
     onlineStatus: string | null
     lastSeen: Date | null
@@ -1442,7 +1442,7 @@ export namespace Prisma {
     id: string
     name: string | null
     email: string
-    passwordHash: string
+    passwordHash: string | null
     profileImage: string | null
     onlineStatus: string | null
     lastSeen: Date | null
@@ -5355,7 +5355,7 @@ export namespace Prisma {
     id?: StringFilter | string
     name?: StringNullableFilter | string | null
     email?: StringFilter | string
-    passwordHash?: StringFilter | string
+    passwordHash?: StringNullableFilter | string | null
     profileImage?: StringNullableFilter | string | null
     onlineStatus?: StringNullableFilter | string | null
     lastSeen?: DateTimeNullableFilter | Date | string | null
@@ -5407,7 +5407,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter | string
     name?: StringNullableWithAggregatesFilter | string | null
     email?: StringWithAggregatesFilter | string
-    passwordHash?: StringWithAggregatesFilter | string
+    passwordHash?: StringNullableWithAggregatesFilter | string | null
     profileImage?: StringNullableWithAggregatesFilter | string | null
     onlineStatus?: StringNullableWithAggregatesFilter | string | null
     lastSeen?: DateTimeNullableWithAggregatesFilter | Date | string | null
@@ -5577,7 +5577,7 @@ export namespace Prisma {
     id?: string
     name?: string | null
     email: string
-    passwordHash: string
+    passwordHash?: string | null
     profileImage?: string | null
     onlineStatus?: string | null
     lastSeen?: Date | string | null
@@ -5591,7 +5591,7 @@ export namespace Prisma {
     id?: string
     name?: string | null
     email: string
-    passwordHash: string
+    passwordHash?: string | null
     profileImage?: string | null
     onlineStatus?: string | null
     lastSeen?: Date | string | null
@@ -5604,7 +5604,7 @@ export namespace Prisma {
   export type UserUpdateInput = {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     profileImage?: NullableStringFieldUpdateOperationsInput | string | null
     onlineStatus?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5617,7 +5617,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateInput = {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     profileImage?: NullableStringFieldUpdateOperationsInput | string | null
     onlineStatus?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5631,7 +5631,7 @@ export namespace Prisma {
     id?: string
     name?: string | null
     email: string
-    passwordHash: string
+    passwordHash?: string | null
     profileImage?: string | null
     onlineStatus?: string | null
     lastSeen?: Date | string | null
@@ -5643,7 +5643,7 @@ export namespace Prisma {
   export type UserUpdateManyMutationInput = {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     profileImage?: NullableStringFieldUpdateOperationsInput | string | null
     onlineStatus?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -5655,7 +5655,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateManyInput = {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     profileImage?: NullableStringFieldUpdateOperationsInput | string | null
     onlineStatus?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6565,7 +6565,7 @@ export namespace Prisma {
     id?: string
     name?: string | null
     email: string
-    passwordHash: string
+    passwordHash?: string | null
     profileImage?: string | null
     onlineStatus?: string | null
     lastSeen?: Date | string | null
@@ -6578,7 +6578,7 @@ export namespace Prisma {
     id?: string
     name?: string | null
     email: string
-    passwordHash: string
+    passwordHash?: string | null
     profileImage?: string | null
     onlineStatus?: string | null
     lastSeen?: Date | string | null
@@ -6621,7 +6621,7 @@ export namespace Prisma {
   export type UserUpdateWithoutMessagesSentInput = {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     profileImage?: NullableStringFieldUpdateOperationsInput | string | null
     onlineStatus?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -6633,7 +6633,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutMessagesSentInput = {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
-    passwordHash?: StringFieldUpdateOperationsInput | string
+    passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     profileImage?: NullableStringFieldUpdateOperationsInput | string | null
     onlineStatus?: NullableStringFieldUpdateOperationsInput | string | null
     lastSeen?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null

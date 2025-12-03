@@ -6,27 +6,47 @@ import { sendOTPEmail } from "../utils/mailer";
 const generateNumericOTP = (length: number) => {
   let otp = "";
   for (let i = 0; i < length; i++) {
-    otp += Math.floor(Math.random() * 10); // only digits
+    otp += Math.floor(Math.random() * 10);
   }
   return otp;
 };
 
 // Send OTP
 export const sendOTP = async (req: Request, res: Response) => {
-  const { email } = req.body;
+  const { email, name } = req.body;
 
   if (!email) return res.status(400).json({ message: "Email is required" });
 
   try {
-    const otp = generateNumericOTP(6); // 6-digit numeric OTP
+    // 1️⃣ Delete any expired OTPs for this email
+    await prisma.oTP.deleteMany({
+      where: {
+        email,
+        OR: [{ expiresAt: { lt: new Date() } }],
+      },
+    });
+
+    // 2️⃣ Create pending user if doesn't exist
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (!existingUser) {
+      await prisma.user.create({
+        data: {
+          email,
+          name: name || null,
+          isVerified: false,
+        },
+      });
+    }
+
+    // 3️⃣ Generate OTP
+    const otp = generateNumericOTP(6);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    // Save OTP in DB
     await prisma.oTP.create({
       data: { email, code: otp, expiresAt },
     });
 
-    // Send numeric OTP via email
+    // 4️⃣ Send OTP via email
     await sendOTPEmail(email, otp);
 
     res.status(200).json({ message: "OTP sent successfully" });
@@ -36,7 +56,6 @@ export const sendOTP = async (req: Request, res: Response) => {
   }
 };
 
-// Verify OTP
 export const verifyOTP = async (req: Request, res: Response) => {
   const { email, otp } = req.body;
 
@@ -45,11 +64,12 @@ export const verifyOTP = async (req: Request, res: Response) => {
 
   try {
     const record = await prisma.oTP.findFirst({
-      where: { email, code: otp },
+      where: { email },
       orderBy: { createdAt: "desc" },
     });
 
-    if (!record) return res.status(400).json({ message: "Invalid OTP" });
+    if (!record || record.code !== otp.trim())
+      return res.status(400).json({ message: "Invalid OTP" });
 
     if (record.expiresAt < new Date())
       return res.status(400).json({ message: "OTP expired" });
@@ -60,7 +80,7 @@ export const verifyOTP = async (req: Request, res: Response) => {
       data: { isVerified: true },
     });
 
-    // Delete used OTPs
+    // Delete all OTPs for this email
     await prisma.oTP.deleteMany({ where: { email } });
 
     res.status(200).json({ message: "OTP verified successfully" });

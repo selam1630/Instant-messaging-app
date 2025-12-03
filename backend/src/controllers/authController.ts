@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/db";
 import { hashPassword, comparePasswords, generateToken } from "../utils/auth";
-import { Prisma } from "src/generated/client";
+
+// Register user (complete registration after OTP verification)
 export const register = async (req: Request, res: Response) => {
   const { name, email, password, profileImage } = req.body;
 
@@ -10,52 +11,49 @@ export const register = async (req: Request, res: Response) => {
   }
 
   try {
+    // 1️⃣ Check if user exists (pending user from OTP request)
     const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return res.status(400).json({ message: "Email already registered" });
+    if (!existingUser) {
+      return res.status(400).json({ message: "Please request OTP first" });
     }
 
-    // Check if email is verified via OTP
-    const verified = await prisma.user.findFirst({
-      where: { email, isVerified: true },
-    });
-
-    if (!verified) {
-      return res.status(400).json({
-        message: "Email not verified. Please verify OTP first.",
-      });
+    // 2️⃣ Ensure OTP was verified
+    if (!existingUser.isVerified) {
+      return res.status(400).json({ message: "Email not verified. Verify OTP first." });
     }
 
+    // 3️⃣ Hash password and update user
     const passwordHash = await hashPassword(password);
 
-    const newUser = await prisma.user.create({
+    const updatedUser = await prisma.user.update({
+      where: { email },
       data: {
-        name,
-        email,
+        name: name || existingUser.name,
+        profileImage: profileImage || existingUser.profileImage,
         passwordHash,
-        profileImage,
-        isVerified: true,
       },
     });
 
-    const token = generateToken({ userId: newUser.id });
+    // 4️⃣ Generate JWT token
+    const token = generateToken({ userId: updatedUser.id });
 
     res.status(201).json({
       message: "User registered successfully",
       user: {
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        profileImage: newUser.profileImage,
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        profileImage: updatedUser.profileImage,
       },
       token,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Register error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
+// Login user
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
@@ -66,6 +64,10 @@ export const login = async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (!user.passwordHash) {
+      return res.status(400).json({ message: "User has not set a password yet" });
+    }
 
     const isPasswordValid = await comparePasswords(password, user.passwordHash);
     if (!isPasswordValid)
@@ -84,7 +86,7 @@ export const login = async (req: Request, res: Response) => {
       token,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
