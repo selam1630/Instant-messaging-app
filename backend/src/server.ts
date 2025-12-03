@@ -25,8 +25,6 @@ app.use("/api/files", fileRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use("/api/otp", otpRoutes);
 
-
-
 app.get("/", (req, res) => {
   res.send("Instant Messaging API is running");
 });
@@ -36,7 +34,10 @@ const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: { origin: "*" },
 });
+
+// Map to store one socket per user
 const onlineUsers: Map<string, string> = new Map();
+
 const emitMessageToUser = (userId: string, event: string, data: any) => {
   const socketId = onlineUsers.get(userId);
   if (socketId) io.to(socketId).emit(event, data);
@@ -44,7 +45,17 @@ const emitMessageToUser = (userId: string, event: string, data: any) => {
 
 io.on("connection", (socket) => {
   console.log("⚡ User connected:", socket.id);
+
+  // -------------------------
+  // User comes online
+  // -------------------------
   socket.on("user_online", async (userId: string) => {
+    // Ensure only one socket per user
+    const existingSocket = onlineUsers.get(userId);
+    if (existingSocket && existingSocket !== socket.id) {
+      onlineUsers.delete(userId);
+    }
+
     onlineUsers.set(userId, socket.id);
     console.log(`🟢 User online: ${userId}`);
 
@@ -55,6 +66,10 @@ io.on("connection", (socket) => {
 
     io.emit("online_users", Array.from(onlineUsers.keys()));
   });
+
+  // -------------------------
+  // Send message
+  // -------------------------
   socket.on("send_message", async (data) => {
     try {
       const { conversationId, senderId, receiverId, content } = data;
@@ -69,18 +84,28 @@ io.on("connection", (socket) => {
           status: "sent",
         },
       });
-      socket.emit("receive_message", newMessage);
+
+      // Only emit to receiver
       emitMessageToUser(receiverId, "receive_message", newMessage);
+
+      // Update message status if receiver is online
       if (onlineUsers.has(receiverId)) {
         await prisma.message.update({
           where: { id: newMessage.id },
           data: { status: "delivered" },
         });
       }
+
+      // Emit confirmation to sender
+      socket.emit("message_sent", newMessage);
     } catch (err) {
       console.error("Error sending message:", err);
     }
   });
+
+  // -------------------------
+  // Mark messages as read
+  // -------------------------
   socket.on("mark_as_read", async ({ messageIds, readerId, senderId }) => {
     try {
       console.log("📘 Marking messages as READ:", messageIds);
@@ -89,14 +114,16 @@ io.on("connection", (socket) => {
         where: { id: { in: messageIds } },
         data: { status: "read" },
       });
-      emitMessageToUser(senderId, "messages_read", {
-        messageIds,
-        readerId,
-      });
+
+      emitMessageToUser(senderId, "messages_read", { messageIds, readerId });
     } catch (err) {
       console.error("Error marking messages as read:", err);
     }
   });
+
+  // -------------------------
+  // Disconnect
+  // -------------------------
   socket.on("disconnect", async () => {
     console.log("🔴 User disconnected:", socket.id);
 
@@ -111,7 +138,7 @@ io.on("connection", (socket) => {
         where: { id: userId },
         data: {
           onlineStatus: "offline",
-          lastSeen: new Date(), 
+          lastSeen: new Date(),
         },
       });
 
@@ -119,6 +146,10 @@ io.on("connection", (socket) => {
     }
   });
 });
+
+// -------------------------
+// Database connection
+// -------------------------
 async function testDatabaseConnection() {
   try {
     await prisma.$connect();
