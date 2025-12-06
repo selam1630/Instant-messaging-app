@@ -1,34 +1,16 @@
 import { Request, Response } from "express";
-import { prisma } from "../config/db";
+import path from "path";
+import fs from "fs";
 
-export const uploadFileMessage = async (req: Request, res: Response) => {
-  try {
-    const { conversationId, senderId, receiverId } = req.body;
-
-    if (!req.files || !(req.files instanceof Array) || req.files.length === 0) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
-
-    const mediaUrls = req.files.map((file) => `/uploads/${file.filename}`);
-
-    const message = await prisma.message.create({
-      data: {
-        conversationId,
-        senderId,
-        receiverId,
-        content: null,
-        mediaUrls,
-        status: "sent",
-      },
-    });
-    await prisma.conversation.update({
-      where: { id: conversationId },
-      data: { lastMessageId: message.id },
-    });
-
-    return res.json({ success: true, message });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error uploading file" });
+export const uploadFile = (req: Request, res: Response) => {
+  if (!req.file) {
+    return res.status(400).json({ message: "No file uploaded" });
   }
+
+  const fileUrl = `/uploads/${req.file.filename}`;
+
+  return res.status(201).json({
+    message: "File uploaded successfully",
+    fileUrl,
+  });
 };

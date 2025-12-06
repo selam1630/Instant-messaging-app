@@ -1,9 +1,8 @@
-import { Router } from "express";
-import upload from "../config/multer";
-import { uploadFileMessage } from "../controllers/fileController";
+import express from "express";
+import { uploadFile } from "../controllers/fileController";
+import { upload } from "../config/multer";
 
-const router = Router();
-
-router.post("/upload", upload.array("files", 10), uploadFileMessage);
+const router = express.Router();
+router.post("/upload", upload.single("file"), uploadFile);
 
 export default router;

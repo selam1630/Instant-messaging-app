@@ -33,8 +33,6 @@ export const register = async (req: Request, res: Response) => {
         passwordHash,
       },
     });
-
-    // 4️⃣ Generate JWT token
     const token = generateToken({ userId: updatedUser.id });
 
     res.status(201).json({

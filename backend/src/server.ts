@@ -34,8 +34,6 @@ const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: { origin: "*" },
 });
-
-// Map to store one socket per user
 const onlineUsers: Map<string, string> = new Map();
 
 const emitMessageToUser = (userId: string, event: string, data: any) => {
@@ -45,12 +43,7 @@ const emitMessageToUser = (userId: string, event: string, data: any) => {
 
 io.on("connection", (socket) => {
   console.log("⚡ User connected:", socket.id);
-
-  // -------------------------
-  // User comes online
-  // -------------------------
   socket.on("user_online", async (userId: string) => {
-    // Ensure only one socket per user
     const existingSocket = onlineUsers.get(userId);
     if (existingSocket && existingSocket !== socket.id) {
       onlineUsers.delete(userId);
@@ -66,46 +59,34 @@ io.on("connection", (socket) => {
 
     io.emit("online_users", Array.from(onlineUsers.keys()));
   });
-
-  // -------------------------
-  // Send message
-  // -------------------------
   socket.on("send_message", async (data) => {
-    try {
-      const { conversationId, senderId, receiverId, content } = data;
+  try {
+    const { conversationId, senderId, receiverId, content, mediaUrls } = data;
 
-      const newMessage = await prisma.message.create({
-        data: {
-          conversationId,
-          senderId,
-          receiverId,
-          content,
-          mediaUrls: [],
-          status: "sent",
-        },
+    const newMessage = await prisma.message.create({
+      data: {
+        conversationId,
+        senderId,
+        receiverId,
+        content,
+        mediaUrls: mediaUrls || [], // array of uploaded file URLs
+        status: "sent",
+      },
+    });
+
+    emitMessageToUser(receiverId, "receive_message", newMessage);
+    if (onlineUsers.has(receiverId)) {
+      await prisma.message.update({
+        where: { id: newMessage.id },
+        data: { status: "delivered" },
       });
-
-      // Only emit to receiver
-      emitMessageToUser(receiverId, "receive_message", newMessage);
-
-      // Update message status if receiver is online
-      if (onlineUsers.has(receiverId)) {
-        await prisma.message.update({
-          where: { id: newMessage.id },
-          data: { status: "delivered" },
-        });
-      }
-
-      // Emit confirmation to sender
-      socket.emit("message_sent", newMessage);
-    } catch (err) {
-      console.error("Error sending message:", err);
     }
-  });
+    socket.emit("message_sent", newMessage);
+  } catch (err) {
+    console.error("Error sending message:", err);
+  }
+});
 
-  // -------------------------
-  // Mark messages as read
-  // -------------------------
   socket.on("mark_as_read", async ({ messageIds, readerId, senderId }) => {
     try {
       console.log("📘 Marking messages as READ:", messageIds);
@@ -120,10 +101,6 @@ io.on("connection", (socket) => {
       console.error("Error marking messages as read:", err);
     }
   });
-
-  // -------------------------
-  // Disconnect
-  // -------------------------
   socket.on("disconnect", async () => {
     console.log("🔴 User disconnected:", socket.id);
 
@@ -146,10 +123,6 @@ io.on("connection", (socket) => {
     }
   });
 });
-
-// -------------------------
-// Database connection
-// -------------------------
 async function testDatabaseConnection() {
   try {
     await prisma.$connect();
