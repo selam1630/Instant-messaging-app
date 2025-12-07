@@ -9,7 +9,6 @@ export interface Message {
   content: string;
   status?: "sent" | "delivered" | "read";
   timestamp?: string;
-  mediaUrls?: string[]; // added for file support
 }
 
 export function useChat(conversationId: string, userId: string) {
@@ -43,7 +42,9 @@ export function useChat(conversationId: string, userId: string) {
 
         // Mark unread messages as read
         const unread = data
-          .filter((m) => m.receiverId === userId && m.status !== "read")
+          .filter(
+            (m) => m.receiverId === userId && m.status !== "read"
+          )
           .map((m) => m.id!);
 
         if (unread.length > 0) {
@@ -114,13 +115,9 @@ export function useChat(conversationId: string, userId: string) {
   }, [socket]);
 
   // -------------------------------
-  // Send message (supports mediaUrls)
+  // Send message
   // -------------------------------
-  const sendMessage = async (
-    receiverId: string,
-    content: string,
-    mediaUrls: string[] = [] // optional third parameter
-  ) => {
+  const sendMessage = async (receiverId: string, content: string) => {
     const msg: Message = {
       conversationId,
       senderId: userId,
@@ -128,11 +125,9 @@ export function useChat(conversationId: string, userId: string) {
       content,
       status: "sent",
       timestamp: new Date().toISOString(),
-      mediaUrls,
     };
     setMessages((prev) => [...prev, msg]);
     socket?.emit("send_message", msg);
-
     try {
       await fetch(`${BACKEND_URL}/api/conversation/messages`, {
         method: "POST",

@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/db";
 import { hashPassword, comparePasswords, generateToken } from "../utils/auth";
-
-// Register user (complete registration after OTP verification)
 export const register = async (req: Request, res: Response) => {
   const { name, email, password, profileImage } = req.body;
 
@@ -11,18 +9,13 @@ export const register = async (req: Request, res: Response) => {
   }
 
   try {
-    // 1️⃣ Check if user exists (pending user from OTP request)
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (!existingUser) {
       return res.status(400).json({ message: "Please request OTP first" });
     }
-
-    // 2️⃣ Ensure OTP was verified
     if (!existingUser.isVerified) {
       return res.status(400).json({ message: "Email not verified. Verify OTP first." });
     }
-
-    // 3️⃣ Hash password and update user
     const passwordHash = await hashPassword(password);
 
     const updatedUser = await prisma.user.update({
