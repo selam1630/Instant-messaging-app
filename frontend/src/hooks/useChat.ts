@@ -29,8 +29,6 @@ export function useChat(conversationId: string, userId: string) {
         if (!res.ok) throw new Error("Failed to fetch messages");
 
         const data: Message[] = await res.json();
-
-        // Filter out deleted messages
         const filtered = data
           .filter(
             (m) =>
@@ -42,8 +40,6 @@ export function useChat(conversationId: string, userId: string) {
           );
 
         setMessages(filtered);
-
-        // Mark unread messages as read
         const unread = filtered
           .filter((m) => m.receiverId === userId && m.status !== "read")
           .map((m) => m.id!);
@@ -72,13 +68,9 @@ export function useChat(conversationId: string, userId: string) {
 
       // Ignore messages deleted for me
       if (msg.deletedForAll || (msg.deletedFor?.includes(userId))) return;
-
-      // Avoid adding your own sent message twice
       if (msg.senderId === userId) return;
 
       setMessages((prev) => [...prev, msg]);
-
-      // Automatically mark as read if the message is for me
       if (msg.receiverId === userId) {
         socket.emit("mark_as_read", {
           messageIds: [msg.id],
