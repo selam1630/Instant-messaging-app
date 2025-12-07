@@ -40,28 +40,22 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const [text, setText] = useState("");
   const flatListRef = useRef<FlatList>(null);
 
-  // Scroll to bottom when messages update
   useEffect(() => {
     if (messages.length > 0) {
       flatListRef.current?.scrollToEnd({ animated: true });
     }
   }, [messages]);
 
-  // -------------------------------
   // SEND TEXT MESSAGE
-  // -------------------------------
   const handleSend = () => {
     if (!text.trim()) return;
     sendMessage(receiverId, text.trim());
     setText("");
   };
-const pickAndSendFile = async () => {
-  try {
-    const res = await DocumentPicker.pick({
-      multiple: false,
-      type: ["*/*"], // all files
-    });
 
+  const pickAndSendFile = async () => {
+  try {
+    const res = await DocumentPicker.pick({ multiple: false, type: ["*/*"] });
     const file = res[0];
 
     const formData = new FormData();
@@ -74,25 +68,26 @@ const pickAndSendFile = async () => {
     const uploadRes = await fetch(`${BACKEND_URL}/api/files/upload`, {
       method: "POST",
       body: formData,
-      headers: { "Content-Type": "multipart/form-data" },
+      // REMOVE headers here!
     });
 
-    const data = await uploadRes.json();
+    if (!uploadRes.ok) {
+      const text = await uploadRes.text(); // server returned error
+      console.error("Server error response:", text);
+      return;
+    }
 
-    // Send the file URL as a chat message
+    const data = await uploadRes.json();
     sendMessage(receiverId, data.fileUrl);
   } catch (err: any) {
-    if (err?.code === "DOCUMENT_PICKER_CANCELED") {
-      // User canceled, ignore
-    } else {
-      console.error("File upload error:", err);
-    }
+    if (err?.code === "DOCUMENT_PICKER_CANCELED") return;
+    console.error("File upload error:", err);
   }
 };
 
   const renderMessage = ({ item }: { item: Message }) => {
     const isSentByMe = item.senderId === userId;
-    const isFile = item.content.startsWith("/uploads/");
+    const isFile = item.content.includes("/uploads/");
 
     return (
       <View
@@ -101,11 +96,8 @@ const pickAndSendFile = async () => {
           isSentByMe ? styles.sent : styles.received,
         ]}
       >
-        {/* FILE MESSAGE */}
         {isFile ? (
-          <TouchableOpacity
-            onPress={() => Linking.openURL(BACKEND_URL + item.content)}
-          >
+          <TouchableOpacity onPress={() => Linking.openURL(item.content)}>
             <Text
               style={[
                 styles.fileText,
@@ -116,7 +108,6 @@ const pickAndSendFile = async () => {
             </Text>
           </TouchableOpacity>
         ) : (
-          // TEXT MESSAGE
           <Text
             style={[
               styles.messageText,
@@ -127,7 +118,6 @@ const pickAndSendFile = async () => {
           </Text>
         )}
 
-        {/* Timestamp + Status */}
         <View style={styles.metaRow}>
           {item.timestamp && (
             <Text style={styles.timestamp}>
@@ -157,9 +147,7 @@ const pickAndSendFile = async () => {
     );
   };
 
-  // -------------------------------
   // USER ONLINE STATUS
-  // -------------------------------
   const receiverStatus = onlineUsers.find((u) => u.id === receiverId);
   const statusText =
     receiverStatus?.onlineStatus === "online"
@@ -183,7 +171,7 @@ const pickAndSendFile = async () => {
           <Text style={styles.receiverStatus}>{statusText}</Text>
         </View>
 
-        {/* MESSAGES LIST */}
+        {/* Messages list */}
         <FlatList
           ref={flatListRef}
           data={messages}
@@ -201,7 +189,7 @@ const pickAndSendFile = async () => {
           }
         />
 
-        {/* INPUT + FILE BUTTON */}
+        {/* Input + file button */}
         <View style={styles.inputWrapper}>
           <TouchableOpacity onPress={pickAndSendFile}>
             <Text style={styles.attachButton}>📎</Text>
@@ -224,106 +212,31 @@ const pickAndSendFile = async () => {
   );
 }
 
+// Styles remain unchanged
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#7b2cbf",
-  },
+  container: { flex: 1, backgroundColor: "#7b2cbf" },
   header: {
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "rgba(255,255,255,0.2)",
     backgroundColor: "#7b2cbf",
   },
-  receiverName: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  receiverStatus: {
-    fontSize: 14,
-    color: "rgba(255,255,255,0.7)",
-    marginTop: 2,
-  },
-
-  // messages
-  messageContainer: {
-    padding: 12,
-    marginVertical: 4,
-    borderRadius: 16,
-    maxWidth: "80%",
-  },
-  sent: {
-    backgroundColor: "#d6bbff",
-    alignSelf: "flex-end",
-  },
-  received: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    alignSelf: "flex-start",
-  },
-  messageText: {
-    fontSize: 16,
-  },
+  receiverName: { fontSize: 20, fontWeight: "bold", color: "#fff" },
+  receiverStatus: { fontSize: 14, color: "rgba(255,255,255,0.7)", marginTop: 2 },
+  messageContainer: { padding: 12, marginVertical: 4, borderRadius: 16, maxWidth: "80%" },
+  sent: { backgroundColor: "#d6bbff", alignSelf: "flex-end" },
+  received: { backgroundColor: "rgba(255,255,255,0.2)", alignSelf: "flex-start" },
+  messageText: { fontSize: 16 },
   sentText: { color: "#4b0082" },
   receivedText: { color: "#fff" },
-
-  fileText: {
-    fontSize: 16,
-    textDecorationLine: "underline",
-  },
-
-  metaRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    marginTop: 4,
-    gap: 6,
-  },
-  timestamp: {
-    fontSize: 10,
-    color: "rgba(255,255,255,0.6)",
-  },
-  statusText: {
-    fontSize: 12,
-    color: "rgba(255,255,255,0.6)",
-  },
-
-  // input
-  inputWrapper: {
-    flexDirection: "row",
-    padding: 10,
-    backgroundColor: "#7b2cbf",
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.2)",
-    alignItems: "center",
-  },
-  attachButton: {
-    fontSize: 28,
-    color: "#fff",
-    marginRight: 10,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    color: "#fff",
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: Platform.OS === "ios" ? 12 : 8,
-    fontSize: 16,
-    marginRight: 8,
-  },
-  sendButton: {
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  sendButtonText: {
-    color: "#7b2cbf",
-    fontWeight: "bold",
-  },
-  noMessages: {
-    textAlign: "center",
-    color: "rgba(255,255,255,0.6)",
-    fontSize: 16,
-  },
+  fileText: { fontSize: 16, textDecorationLine: "underline" },
+  metaRow: { flexDirection: "row", justifyContent: "flex-end", marginTop: 4, gap: 6 },
+  timestamp: { fontSize: 10, color: "rgba(255,255,255,0.6)" },
+  statusText: { fontSize: 12, color: "rgba(255,255,255,0.6)" },
+  inputWrapper: { flexDirection: "row", padding: 10, backgroundColor: "#7b2cbf", borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.2)", alignItems: "center" },
+  attachButton: { fontSize: 28, color: "#fff", marginRight: 10 },
+  input: { flex: 1, backgroundColor: "rgba(255,255,255,0.2)", color: "#fff", borderRadius: 20, paddingHorizontal: 16, paddingVertical: Platform.OS === "ios" ? 12 : 8, fontSize: 16, marginRight: 8 },
+  sendButton: { backgroundColor: "#fff", borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10 },
+  sendButtonText: { color: "#7b2cbf", fontWeight: "bold" },
+  noMessages: { textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 16 },
 });
