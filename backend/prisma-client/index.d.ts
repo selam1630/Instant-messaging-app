@@ -76,6 +76,8 @@ export type MessagePayload<ExtArgs extends $Extensions.Args = $Extensions.Defaul
     timestamp: Date
     status: string
     receiverId: string
+    deletedFor: string[]
+    deletedForAll: boolean
   }, ExtArgs["result"]["message"]>
   composites: {}
 }
@@ -3348,6 +3350,7 @@ export namespace Prisma {
     timestamp: Date | null
     status: string | null
     receiverId: string | null
+    deletedForAll: boolean | null
   }
 
   export type MessageMaxAggregateOutputType = {
@@ -3358,6 +3361,7 @@ export namespace Prisma {
     timestamp: Date | null
     status: string | null
     receiverId: string | null
+    deletedForAll: boolean | null
   }
 
   export type MessageCountAggregateOutputType = {
@@ -3369,6 +3373,8 @@ export namespace Prisma {
     timestamp: number
     status: number
     receiverId: number
+    deletedFor: number
+    deletedForAll: number
     _all: number
   }
 
@@ -3381,6 +3387,7 @@ export namespace Prisma {
     timestamp?: true
     status?: true
     receiverId?: true
+    deletedForAll?: true
   }
 
   export type MessageMaxAggregateInputType = {
@@ -3391,6 +3398,7 @@ export namespace Prisma {
     timestamp?: true
     status?: true
     receiverId?: true
+    deletedForAll?: true
   }
 
   export type MessageCountAggregateInputType = {
@@ -3402,6 +3410,8 @@ export namespace Prisma {
     timestamp?: true
     status?: true
     receiverId?: true
+    deletedFor?: true
+    deletedForAll?: true
     _all?: true
   }
 
@@ -3487,6 +3497,8 @@ export namespace Prisma {
     timestamp: Date
     status: string
     receiverId: string
+    deletedFor: string[]
+    deletedForAll: boolean
     _count: MessageCountAggregateOutputType | null
     _min: MessageMinAggregateOutputType | null
     _max: MessageMaxAggregateOutputType | null
@@ -3515,6 +3527,8 @@ export namespace Prisma {
     timestamp?: boolean
     status?: boolean
     receiverId?: boolean
+    deletedFor?: boolean
+    deletedForAll?: boolean
     conversation?: boolean | ConversationArgs<ExtArgs>
     sender?: boolean | UserArgs<ExtArgs>
   }, ExtArgs["result"]["message"]>
@@ -3528,6 +3542,8 @@ export namespace Prisma {
     timestamp?: boolean
     status?: boolean
     receiverId?: boolean
+    deletedFor?: boolean
+    deletedForAll?: boolean
   }
 
   export type MessageInclude<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
@@ -5310,7 +5326,9 @@ export namespace Prisma {
     mediaUrls: 'mediaUrls',
     timestamp: 'timestamp',
     status: 'status',
-    receiverId: 'receiverId'
+    receiverId: 'receiverId',
+    deletedFor: 'deletedFor',
+    deletedForAll: 'deletedForAll'
   };
 
   export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
@@ -5479,6 +5497,8 @@ export namespace Prisma {
     timestamp?: DateTimeFilter | Date | string
     status?: StringFilter | string
     receiverId?: StringFilter | string
+    deletedFor?: StringNullableListFilter
+    deletedForAll?: BoolFilter | boolean
     conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
     sender?: XOR<UserRelationFilter, UserWhereInput>
   }
@@ -5492,6 +5512,8 @@ export namespace Prisma {
     timestamp?: SortOrder
     status?: SortOrder
     receiverId?: SortOrder
+    deletedFor?: SortOrder
+    deletedForAll?: SortOrder
     conversation?: ConversationOrderByWithRelationInput
     sender?: UserOrderByWithRelationInput
   }
@@ -5509,6 +5531,8 @@ export namespace Prisma {
     timestamp?: SortOrder
     status?: SortOrder
     receiverId?: SortOrder
+    deletedFor?: SortOrder
+    deletedForAll?: SortOrder
     _count?: MessageCountOrderByAggregateInput
     _max?: MessageMaxOrderByAggregateInput
     _min?: MessageMinOrderByAggregateInput
@@ -5526,6 +5550,8 @@ export namespace Prisma {
     timestamp?: DateTimeWithAggregatesFilter | Date | string
     status?: StringWithAggregatesFilter | string
     receiverId?: StringWithAggregatesFilter | string
+    deletedFor?: StringNullableListFilter
+    deletedForAll?: BoolWithAggregatesFilter | boolean
   }
 
   export type OTPWhereInput = {
@@ -5734,6 +5760,8 @@ export namespace Prisma {
     timestamp?: Date | string
     status: string
     receiverId: string
+    deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
+    deletedForAll?: boolean
     conversation: ConversationCreateNestedOneWithoutMessagesInput
     sender: UserCreateNestedOneWithoutMessagesSentInput
   }
@@ -5747,6 +5775,8 @@ export namespace Prisma {
     timestamp?: Date | string
     status: string
     receiverId: string
+    deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
+    deletedForAll?: boolean
   }
 
   export type MessageUpdateInput = {
@@ -5755,6 +5785,8 @@ export namespace Prisma {
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
     receiverId?: StringFieldUpdateOperationsInput | string
+    deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
+    deletedForAll?: BoolFieldUpdateOperationsInput | boolean
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
     sender?: UserUpdateOneRequiredWithoutMessagesSentNestedInput
   }
@@ -5767,6 +5799,8 @@ export namespace Prisma {
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
     receiverId?: StringFieldUpdateOperationsInput | string
+    deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
+    deletedForAll?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type MessageCreateManyInput = {
@@ -5778,6 +5812,8 @@ export namespace Prisma {
     timestamp?: Date | string
     status: string
     receiverId: string
+    deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
+    deletedForAll?: boolean
   }
 
   export type MessageUpdateManyMutationInput = {
@@ -5786,6 +5822,8 @@ export namespace Prisma {
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
     receiverId?: StringFieldUpdateOperationsInput | string
+    deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
+    deletedForAll?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type MessageUncheckedUpdateManyInput = {
@@ -5796,6 +5834,8 @@ export namespace Prisma {
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
     receiverId?: StringFieldUpdateOperationsInput | string
+    deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
+    deletedForAll?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type OTPCreateInput = {
@@ -6084,6 +6124,8 @@ export namespace Prisma {
     timestamp?: SortOrder
     status?: SortOrder
     receiverId?: SortOrder
+    deletedFor?: SortOrder
+    deletedForAll?: SortOrder
   }
 
   export type MessageMaxOrderByAggregateInput = {
@@ -6094,6 +6136,7 @@ export namespace Prisma {
     timestamp?: SortOrder
     status?: SortOrder
     receiverId?: SortOrder
+    deletedForAll?: SortOrder
   }
 
   export type MessageMinOrderByAggregateInput = {
@@ -6104,6 +6147,7 @@ export namespace Prisma {
     timestamp?: SortOrder
     status?: SortOrder
     receiverId?: SortOrder
+    deletedForAll?: SortOrder
   }
 
   export type OTPCountOrderByAggregateInput = {
@@ -6249,6 +6293,10 @@ export namespace Prisma {
     set: Enumerable<string>
   }
 
+  export type MessageCreatedeletedForInput = {
+    set: Enumerable<string>
+  }
+
   export type ConversationCreateNestedOneWithoutMessagesInput = {
     create?: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
     connectOrCreate?: ConversationCreateOrConnectWithoutMessagesInput
@@ -6262,6 +6310,11 @@ export namespace Prisma {
   }
 
   export type MessageUpdatemediaUrlsInput = {
+    set?: Enumerable<string>
+    push?: string | Enumerable<string>
+  }
+
+  export type MessageUpdatedeletedForInput = {
     set?: Enumerable<string>
     push?: string | Enumerable<string>
   }
@@ -6441,6 +6494,8 @@ export namespace Prisma {
     timestamp?: Date | string
     status: string
     receiverId: string
+    deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
+    deletedForAll?: boolean
     conversation: ConversationCreateNestedOneWithoutMessagesInput
   }
 
@@ -6452,6 +6507,8 @@ export namespace Prisma {
     timestamp?: Date | string
     status: string
     receiverId: string
+    deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
+    deletedForAll?: boolean
   }
 
   export type MessageCreateOrConnectWithoutSenderInput = {
@@ -6491,6 +6548,8 @@ export namespace Prisma {
     timestamp?: DateTimeFilter | Date | string
     status?: StringFilter | string
     receiverId?: StringFilter | string
+    deletedFor?: StringNullableListFilter
+    deletedForAll?: BoolFilter | boolean
   }
 
   export type MessageCreateWithoutConversationInput = {
@@ -6500,6 +6559,8 @@ export namespace Prisma {
     timestamp?: Date | string
     status: string
     receiverId: string
+    deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
+    deletedForAll?: boolean
     sender: UserCreateNestedOneWithoutMessagesSentInput
   }
 
@@ -6511,6 +6572,8 @@ export namespace Prisma {
     timestamp?: Date | string
     status: string
     receiverId: string
+    deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
+    deletedForAll?: boolean
   }
 
   export type MessageCreateOrConnectWithoutConversationInput = {
@@ -6650,6 +6713,8 @@ export namespace Prisma {
     timestamp?: Date | string
     status: string
     receiverId: string
+    deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
+    deletedForAll?: boolean
   }
 
   export type MessageUpdateWithoutSenderInput = {
@@ -6658,6 +6723,8 @@ export namespace Prisma {
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
     receiverId?: StringFieldUpdateOperationsInput | string
+    deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
+    deletedForAll?: BoolFieldUpdateOperationsInput | boolean
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
   }
 
@@ -6668,6 +6735,8 @@ export namespace Prisma {
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
     receiverId?: StringFieldUpdateOperationsInput | string
+    deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
+    deletedForAll?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type MessageUncheckedUpdateManyWithoutMessagesSentInput = {
@@ -6677,6 +6746,8 @@ export namespace Prisma {
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
     receiverId?: StringFieldUpdateOperationsInput | string
+    deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
+    deletedForAll?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type MessageCreateManyConversationInput = {
@@ -6687,6 +6758,8 @@ export namespace Prisma {
     timestamp?: Date | string
     status: string
     receiverId: string
+    deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
+    deletedForAll?: boolean
   }
 
   export type MessageUpdateWithoutConversationInput = {
@@ -6695,6 +6768,8 @@ export namespace Prisma {
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
     receiverId?: StringFieldUpdateOperationsInput | string
+    deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
+    deletedForAll?: BoolFieldUpdateOperationsInput | boolean
     sender?: UserUpdateOneRequiredWithoutMessagesSentNestedInput
   }
 
@@ -6705,6 +6780,8 @@ export namespace Prisma {
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
     receiverId?: StringFieldUpdateOperationsInput | string
+    deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
+    deletedForAll?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type MessageUncheckedUpdateManyWithoutMessagesInput = {
@@ -6714,6 +6791,8 @@ export namespace Prisma {
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
     receiverId?: StringFieldUpdateOperationsInput | string
+    deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
+    deletedForAll?: BoolFieldUpdateOperationsInput | boolean
   }
 
 

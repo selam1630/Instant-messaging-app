@@ -17,9 +17,7 @@ export function useChat(conversationId: string, userId: string) {
 
   const BACKEND_URL = "http://localhost:4000";
 
-  // -------------------------------
   // Fetch messages from backend
-  // -------------------------------
   useEffect(() => {
     if (!conversationId) return;
 
@@ -42,9 +40,7 @@ export function useChat(conversationId: string, userId: string) {
 
         // Mark unread messages as read
         const unread = data
-          .filter(
-            (m) => m.receiverId === userId && m.status !== "read"
-          )
+          .filter((m) => m.receiverId === userId && m.status !== "read")
           .map((m) => m.id!);
 
         if (unread.length > 0) {
@@ -62,9 +58,7 @@ export function useChat(conversationId: string, userId: string) {
     fetchMessages();
   }, [conversationId, userId, socket]);
 
-  // -------------------------------
   // Listen for incoming messages
-  // -------------------------------
   useEffect(() => {
     if (!socket) return;
 
@@ -93,9 +87,7 @@ export function useChat(conversationId: string, userId: string) {
     };
   }, [socket, conversationId, userId]);
 
-  // -------------------------------
   // Listen for messages read updates
-  // -------------------------------
   useEffect(() => {
     if (!socket) return;
 
@@ -114,9 +106,7 @@ export function useChat(conversationId: string, userId: string) {
     };
   }, [socket]);
 
-  // -------------------------------
   // Send message
-  // -------------------------------
   const sendMessage = async (receiverId: string, content: string) => {
     const msg: Message = {
       conversationId,
@@ -139,5 +129,6 @@ export function useChat(conversationId: string, userId: string) {
     }
   };
 
-  return { messages, sendMessage };
+  // ✅ Return setMessages to allow deletion from ChatScreen
+  return { messages, sendMessage, setMessages };
 }

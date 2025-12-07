@@ -11,6 +11,7 @@ import conversationRoutes from "./routes/conversationRoutes";
 import fileRoutes from "./routes/fileRoutes";
 import path from "path";
 import otpRoutes from "./routes/otpRoutes";
+import messageRoutes from "./routes/messageRoutes";
 
 dotenv.config();
 
@@ -25,7 +26,7 @@ app.use("/api/files", fileRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "config/uploads")));
 
 app.use("/api/otp", otpRoutes);
-
+app.use("/api/messages", messageRoutes);
 app.get("/", (req, res) => {
   res.send("Instant Messaging API is running");
 });

@@ -45,6 +45,9 @@ model Message {
   status         String
   receiverId     String        @db.ObjectId
 
+  deletedFor     String[]      @default([]) 
+  deletedForAll  Boolean       @default(false)
+
   conversation  Conversation   @relation(fields: [conversationId], references: [id], name: "ConversationMessages")
   sender        User           @relation(fields: [senderId], references: [id], name: "UserMessages")
 }

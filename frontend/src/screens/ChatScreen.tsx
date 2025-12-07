@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Linking,
+  Alert,
 } from "react-native";
 import { useChat, Message } from "../hooks/useChat";
 import { useSocket } from "../context/SocketContext";
@@ -34,7 +35,7 @@ interface ChatScreenProps {
 
 export default function ChatScreen({ route }: ChatScreenProps) {
   const { conversationId, userId, receiverId, receiverName } = route.params;
-  const { messages, sendMessage } = useChat(conversationId, userId);
+  const { messages, sendMessage, setMessages } = useChat(conversationId, userId);
   const { onlineUsers } = useSocket();
 
   const [text, setText] = useState("");
@@ -53,44 +54,92 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     setText("");
   };
 
+  // PICK AND SEND FILE
   const pickAndSendFile = async () => {
-  try {
-    const res = await DocumentPicker.pick({ multiple: false, type: ["*/*"] });
-    const file = res[0];
+    try {
+      const res = await DocumentPicker.pick({ multiple: false, type: ["*/*"] });
+      const file = res[0];
 
-    const formData = new FormData();
-    formData.append("file", {
-      uri: file.uri,
-      type: file.type,
-      name: file.name,
-    } as any);
+      const formData = new FormData();
+      formData.append("file", {
+        uri: file.uri,
+        type: file.type,
+        name: file.name,
+      } as any);
 
-    const uploadRes = await fetch(`${BACKEND_URL}/api/files/upload`, {
-      method: "POST",
-      body: formData,
-      // REMOVE headers here!
-    });
+      const uploadRes = await fetch(`${BACKEND_URL}/api/files/upload`, {
+        method: "POST",
+        body: formData,
+      });
 
-    if (!uploadRes.ok) {
-      const text = await uploadRes.text(); // server returned error
-      console.error("Server error response:", text);
-      return;
+      if (!uploadRes.ok) {
+        const text = await uploadRes.text();
+        console.error("Server error response:", text);
+        return;
+      }
+
+      const data = await uploadRes.json();
+      sendMessage(receiverId, data.fileUrl);
+    } catch (err: any) {
+      if (err?.code === "DOCUMENT_PICKER_CANCELED") return;
+      console.error("File upload error:", err);
     }
+  };
 
-    const data = await uploadRes.json();
-    sendMessage(receiverId, data.fileUrl);
-  } catch (err: any) {
-    if (err?.code === "DOCUMENT_PICKER_CANCELED") return;
-    console.error("File upload error:", err);
-  }
-};
+  // DELETE MESSAGE
+  const deleteMessage = async (messageId: string, deleteForEveryone: boolean) => {
+    try {
+      if (!messageId) return;
+      const res = await fetch(`${BACKEND_URL}/api/messages/delete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messageId,
+          userId,
+          deleteForEveryone,
+        }),
+      });
 
+      const data = await res.json();
+      if (data.success) {
+        setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+      } else {
+        console.error("Delete failed:", data.error);
+      }
+    } catch (err) {
+      console.error("Delete message error:", err);
+    }
+  };
+
+  // HANDLE LONG PRESS
+  const handleLongPress = (item: Message) => {
+    if (!item.id) return;
+
+    const isSentByMe = item.senderId === userId;
+    const options = ["Delete for me"];
+    if (isSentByMe) options.push("Delete for everyone");
+    options.push("Cancel");
+
+    Alert.alert("Delete Message", "Choose an option", [
+      { text: "Delete for me", onPress: () => deleteMessage(item.id!, false) },
+      isSentByMe && {
+        text: "Delete for everyone",
+        onPress: () => deleteMessage(item.id!, true),
+        style: "destructive",
+      },
+      { text: "Cancel", style: "cancel" },
+    ].filter(Boolean) as any);
+  };
+
+  // RENDER MESSAGE
   const renderMessage = ({ item }: { item: Message }) => {
     const isSentByMe = item.senderId === userId;
     const isFile = item.content.includes("/uploads/");
 
     return (
-      <View
+      <TouchableOpacity
+        onLongPress={() => handleLongPress(item)}
+        activeOpacity={0.8}
         style={[
           styles.messageContainer,
           isSentByMe ? styles.sent : styles.received,
@@ -143,7 +192,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
             </Text>
           )}
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -165,17 +214,15 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
       <View style={styles.container}>
-        {/* Header */}
         <View style={styles.header}>
           <Text style={styles.receiverName}>{receiverName}</Text>
           <Text style={styles.receiverStatus}>{statusText}</Text>
         </View>
 
-        {/* Messages list */}
         <FlatList
           ref={flatListRef}
           data={messages}
-          keyExtractor={(item) => item.id || Math.random().toString()}
+          keyExtractor={(item) => item.id!}
           renderItem={renderMessage}
           contentContainerStyle={{
             flexGrow: 1,
@@ -189,7 +236,6 @@ export default function ChatScreen({ route }: ChatScreenProps) {
           }
         />
 
-        {/* Input + file button */}
         <View style={styles.inputWrapper}>
           <TouchableOpacity onPress={pickAndSendFile}>
             <Text style={styles.attachButton}>📎</Text>
@@ -212,7 +258,6 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   );
 }
 
-// Styles remain unchanged
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#7b2cbf" },
   header: {

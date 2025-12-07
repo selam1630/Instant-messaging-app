@@ -128,7 +128,9 @@ exports.Prisma.MessageScalarFieldEnum = {
   mediaUrls: 'mediaUrls',
   timestamp: 'timestamp',
   status: 'status',
-  receiverId: 'receiverId'
+  receiverId: 'receiverId',
+  deletedFor: 'deletedFor',
+  deletedForAll: 'deletedForAll'
 };
 
 exports.Prisma.OTPScalarFieldEnum = {
