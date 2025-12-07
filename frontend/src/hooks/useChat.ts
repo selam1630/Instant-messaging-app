@@ -9,6 +9,8 @@ export interface Message {
   content: string;
   status?: "sent" | "delivered" | "read";
   timestamp?: string;
+  deletedForAll?: boolean;
+  deletedFor?: string[];
 }
 
 export function useChat(conversationId: string, userId: string) {
@@ -16,8 +18,6 @@ export function useChat(conversationId: string, userId: string) {
   const [messages, setMessages] = useState<Message[]>([]);
 
   const BACKEND_URL = "http://localhost:4000";
-
-  // Fetch messages from backend
   useEffect(() => {
     if (!conversationId) return;
 
@@ -30,16 +30,21 @@ export function useChat(conversationId: string, userId: string) {
 
         const data: Message[] = await res.json();
 
-        data.sort(
-          (a, b) =>
-            new Date(a.timestamp!).getTime() -
-            new Date(b.timestamp!).getTime()
-        );
+        // Filter out deleted messages
+        const filtered = data
+          .filter(
+            (m) =>
+              !m.deletedForAll && (!m.deletedFor || !m.deletedFor.includes(userId))
+          )
+          .sort(
+            (a, b) =>
+              new Date(a.timestamp!).getTime() - new Date(b.timestamp!).getTime()
+          );
 
-        setMessages(data);
+        setMessages(filtered);
 
         // Mark unread messages as read
-        const unread = data
+        const unread = filtered
           .filter((m) => m.receiverId === userId && m.status !== "read")
           .map((m) => m.id!);
 
@@ -47,7 +52,7 @@ export function useChat(conversationId: string, userId: string) {
           socket?.emit("mark_as_read", {
             messageIds: unread,
             readerId: userId,
-            senderId: data[0]?.senderId,
+            senderId: filtered[0]?.senderId,
           });
         }
       } catch (err) {
@@ -64,6 +69,9 @@ export function useChat(conversationId: string, userId: string) {
 
     const handleReceiveMessage = (msg: Message) => {
       if (msg.conversationId !== conversationId) return;
+
+      // Ignore messages deleted for me
+      if (msg.deletedForAll || (msg.deletedFor?.includes(userId))) return;
 
       // Avoid adding your own sent message twice
       if (msg.senderId === userId) return;
@@ -106,6 +114,21 @@ export function useChat(conversationId: string, userId: string) {
     };
   }, [socket]);
 
+  // Listen for message deletions (delete for everyone)
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleMessageDeleted = (messageId: string) => {
+      setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+    };
+
+    socket.on("message_deleted", handleMessageDeleted);
+
+    return () => {
+      socket.off("message_deleted", handleMessageDeleted);
+    };
+  }, [socket]);
+
   // Send message
   const sendMessage = async (receiverId: string, content: string) => {
     const msg: Message = {
@@ -129,6 +152,5 @@ export function useChat(conversationId: string, userId: string) {
     }
   };
 
-  // ✅ Return setMessages to allow deletion from ChatScreen
   return { messages, sendMessage, setMessages };
 }
