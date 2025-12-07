@@ -12,7 +12,8 @@ import {
 } from "react-native";
 import { useChat, Message } from "../hooks/useChat";
 import { useSocket } from "../context/SocketContext";
-import DocumentPicker from "react-native-document-picker";
+import * as DocumentPicker from "@react-native-documents/picker";
+
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 
@@ -54,45 +55,41 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     sendMessage(receiverId, text.trim());
     setText("");
   };
+const pickAndSendFile = async () => {
+  try {
+    const res = await DocumentPicker.pick({
+      multiple: false,
+      type: ["*/*"], // all files
+    });
 
-  // -------------------------------
-  // PICK + UPLOAD FILE
-  // -------------------------------
-  const pickAndSendFile = async () => {
-    try {
-      const res = await DocumentPicker.pickSingle({
-        type: DocumentPicker.types.allFiles,
-      });
+    const file = res[0];
 
-      const file = {
-        uri: res.uri,
-        type: res.type,
-        name: res.name,
-      };
+    const formData = new FormData();
+    formData.append("file", {
+      uri: file.uri,
+      type: file.type,
+      name: file.name,
+    } as any);
 
-      const formData = new FormData();
-      formData.append("file", file as any);
+    const uploadRes = await fetch(`${BACKEND_URL}/api/files/upload`, {
+      method: "POST",
+      body: formData,
+      headers: { "Content-Type": "multipart/form-data" },
+    });
 
-      const uploadRes = await fetch(`${BACKEND_URL}/api/files/upload`, {
-        method: "POST",
-        body: formData,
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+    const data = await uploadRes.json();
 
-      const data = await uploadRes.json();
-
-      // Send the file URL as a chat message
-      sendMessage(receiverId, data.fileUrl);
-    } catch (err) {
-      if (!DocumentPicker.isCancel(err)) {
-        console.error("File upload error:", err);
-      }
+    // Send the file URL as a chat message
+    sendMessage(receiverId, data.fileUrl);
+  } catch (err: any) {
+    if (err?.code === "DOCUMENT_PICKER_CANCELED") {
+      // User canceled, ignore
+    } else {
+      console.error("File upload error:", err);
     }
-  };
+  }
+};
 
-  // -------------------------------
-  // RENDER MESSAGE BUBBLE
-  // -------------------------------
   const renderMessage = ({ item }: { item: Message }) => {
     const isSentByMe = item.senderId === userId;
     const isFile = item.content.startsWith("/uploads/");
