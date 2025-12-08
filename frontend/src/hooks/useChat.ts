@@ -58,15 +58,11 @@ export function useChat(conversationId: string, userId: string) {
 
     fetchMessages();
   }, [conversationId, userId, socket]);
-
-  // Listen for incoming messages
   useEffect(() => {
     if (!socket) return;
 
     const handleReceiveMessage = (msg: Message) => {
       if (msg.conversationId !== conversationId) return;
-
-      // Ignore messages deleted for me
       if (msg.deletedForAll || (msg.deletedFor?.includes(userId))) return;
       if (msg.senderId === userId) return;
 
@@ -86,8 +82,6 @@ export function useChat(conversationId: string, userId: string) {
       socket.off("receive_message", handleReceiveMessage);
     };
   }, [socket, conversationId, userId]);
-
-  // Listen for messages read updates
   useEffect(() => {
     if (!socket) return;
 
@@ -105,8 +99,6 @@ export function useChat(conversationId: string, userId: string) {
       socket.off("messages_read", handleMessagesRead);
     };
   }, [socket]);
-
-  // Listen for message deletions (delete for everyone)
   useEffect(() => {
     if (!socket) return;
 
