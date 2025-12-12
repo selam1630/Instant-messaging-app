@@ -10,6 +10,8 @@ import {
   Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 export default function ChatListScreen({ route }: any) {
   const navigation = useNavigation<any>();
@@ -62,11 +64,23 @@ export default function ChatListScreen({ route }: any) {
       console.error("Error starting chat:", err);
     }
   };
+const handleLogout = async () => {
+  try {
+    // Remove saved auth data
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("user");
 
-  const handleLogout = () => {
-    // Here you can also clear any auth tokens if needed
+    // Or clear everything:
+    // await AsyncStorage.clear();
+
+    // Navigate to SignIn
     navigation.replace("SignIn");
-  };
+  } catch (err) {
+    console.error("Logout error:", err);
+  }
+};
+
+
 
   const renderItem = ({ item }: any) => (
     <TouchableOpacity
