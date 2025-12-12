@@ -12,7 +12,6 @@ export interface Message {
   deletedForAll?: boolean;
   deletedFor?: string[];
 }
-
 export function useChat(conversationId: string, userId: string) {
   const { socket } = useSocket();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -112,8 +111,6 @@ export function useChat(conversationId: string, userId: string) {
       socket.off("message_deleted", handleMessageDeleted);
     };
   }, [socket]);
-
-  // Send message
   const sendMessage = async (receiverId: string, content: string) => {
     const msg: Message = {
       conversationId,

@@ -15,6 +15,8 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../../App";
 import { useSocket } from "../../context/SocketContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 export default function SignInScreen() {
   const [email, setEmail] = useState("");
@@ -49,52 +51,48 @@ export default function SignInScreen() {
   };
 
   const handleSignIn = async () => {
-    setError("");
+  setError("");
 
-    if (!email || !password) {
-      setError("Please enter both email and password.");
+  if (!email || !password) {
+    setError("Please enter both email and password.");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError(data.message || "Invalid credentials.");
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
+    const userId = data.user.id;
 
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
+    // 🔥 SAVE LOGIN DATA
+    await AsyncStorage.setItem("token", data.token);
+    await AsyncStorage.setItem("user", JSON.stringify(data.user));
 
-      const data = await response.json();
+    socket?.emit("user_online", userId);
 
-      if (!response.ok) {
-        setError(data.message || "Invalid credentials.");
-        setLoading(false);
-        return;
-      }
-
-      const userId = data.user.id;
-      const receiverId = "u2";
-
-      socket?.emit("user_online", userId);
-
-      const conversationId = await getConversationId(userId, receiverId);
-
-      if (!conversationId) {
-        Alert.alert("Error", "Unable to load conversation.");
-        return;
-      }
-
-      navigation.replace("ChatList", {
-        userId: data.user.id,
-      });
-    } catch (err) {
-      console.error(err);
-      setError("Failed to connect to server.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    navigation.replace("ChatList", {
+      userId: data.user.id,
+    });
+  } catch (err) {
+    console.error(err);
+    setError("Failed to connect to server.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <View style={styles.container}>
