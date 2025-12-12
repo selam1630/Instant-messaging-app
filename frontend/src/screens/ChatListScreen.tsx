@@ -66,14 +66,8 @@ export default function ChatListScreen({ route }: any) {
   };
 const handleLogout = async () => {
   try {
-    // Remove saved auth data
     await AsyncStorage.removeItem("token");
     await AsyncStorage.removeItem("user");
-
-    // Or clear everything:
-    // await AsyncStorage.clear();
-
-    // Navigate to SignIn
     navigation.replace("SignIn");
   } catch (err) {
     console.error("Logout error:", err);
