@@ -46,22 +46,17 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const [audioFile, setAudioFile] = useState<string | null>(null);
 
   const flatListRef = useRef<FlatList>(null);
-  const recorderRef = useRef<any>(NitroSound); // <--- Use the singleton directly
-
+  const recorderRef = useRef<any>(NitroSound); 
   useEffect(() => {
     if (messages.length > 0) {
       flatListRef.current?.scrollToEnd({ animated: true });
     }
   }, [messages]);
-
-  // ---------------- TEXT MESSAGE ----------------
   const handleSend = () => {
     if (!text.trim()) return;
     sendMessage(receiverId, text.trim());
     setText("");
   };
-
-  // ---------------- FILE PICKER ----------------
   const pickAndSendFile = async () => {
     try {
       const res = await DocumentPicker.pick({ multiple: false, type: ["*/*"] });
@@ -84,7 +79,6 @@ export default function ChatScreen({ route }: ChatScreenProps) {
         console.error("Server error response:", text);
         return;
       }
-
       const data = await uploadRes.json();
       sendMessage(receiverId, data.fileUrl);
     } catch (err: any) {
@@ -92,8 +86,6 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       console.error("File upload error:", err);
     }
   };
-
-  // ---------------- DELETE MESSAGE ----------------
   const deleteMessage = async (messageId: string, deleteForEveryone: boolean) => {
     try {
       if (!messageId) return;
@@ -127,8 +119,6 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       ].filter(Boolean) as any
     );
   };
-
-  // ---------------- AUDIO RECORDING ----------------
   const requestAudioPermission = async () => {
     if (Platform.OS === "android") {
       const granted = await PermissionsAndroid.requestMultiple([
@@ -201,8 +191,6 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       console.error("Audio send error:", err);
     }
   };
-
-  // ---------------- RENDER MESSAGE ----------------
   const renderMessage = ({ item }: { item: Message }) => {
     const isSentByMe = item.senderId === userId;
     const isFile = item.content.includes("/uploads/");
@@ -240,8 +228,6 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       </TouchableOpacity>
     );
   };
-
-  // ---------------- USER ONLINE STATUS ----------------
   const receiverStatus = onlineUsers.find((u) => u.id === receiverId);
   const statusText =
     receiverStatus?.onlineStatus === "online"
@@ -250,7 +236,6 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       ? `Last seen at ${dayjs(receiverStatus.lastSeen).format("MMM D, YYYY h:mm A")}`
       : "Offline";
 
-  // ---------------- RENDER ----------------
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}>
       <View style={styles.container}>
@@ -292,7 +277,6 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   );
 }
 
-// ---------------- STYLES ----------------
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#7b2cbf" },
   header: { padding: 16, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.2)", backgroundColor: "#7b2cbf" },
