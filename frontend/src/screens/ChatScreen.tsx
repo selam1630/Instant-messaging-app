@@ -244,11 +244,11 @@ export default function ChatScreen({ route }: ChatScreenProps) {
           <Text style={styles.receiverStatus}>{statusText}</Text>
         </View>
 
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          keyExtractor={(item) => item.id!}
-          renderItem={renderMessage}
+       <FlatList
+  ref={flatListRef}
+  data={messages}
+  keyExtractor={(item, index) => item.id ?? `msg-${index}`}
+  renderItem={renderMessage}
           contentContainerStyle={{ flexGrow: 1, justifyContent: messages.length === 0 ? "center" : "flex-end", paddingVertical: 10 }}
           ListEmptyComponent={<Text style={styles.noMessages}>No messages yet. Start chatting!</Text>}
         />
