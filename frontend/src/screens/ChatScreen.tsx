@@ -20,7 +20,7 @@ import * as DocumentPicker from "@react-native-documents/picker";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import RNFS from "react-native-fs";
-import AudioRecorderPlayer from "react-native-audio-recorder-player"; // do not use `new` in latest versions
+import AudioRecorderPlayer from "react-native-audio-recorder-player"; 
 
 dayjs.extend(relativeTime);
 
@@ -48,7 +48,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const [isRecorderStarted, setIsRecorderStarted] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
-  const audioRecorderPlayer = useRef(AudioRecorderPlayer).current; // just use the imported module
+  const audioRecorderPlayer = useRef(AudioRecorderPlayer).current; 
 
   useEffect(() => {
     if (messages.length > 0) {
