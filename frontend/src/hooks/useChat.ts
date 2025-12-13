@@ -22,10 +22,10 @@ export function useChat(conversationId: string, userId: string) {
   const BACKEND_URL = "http://localhost:4000";
 
   /* -------------------------------------------
-     FETCH MESSAGES
+     FETCH MESSAGES (ONCE PER CONVERSATION)
   --------------------------------------------*/
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId || !userId) return;
 
     const fetchMessages = async () => {
       try {
@@ -49,6 +49,7 @@ export function useChat(conversationId: string, userId: string) {
               new Date(b.timestamp!).getTime()
           );
 
+        // ✅ REPLACE STATE (NO MERGE → NO DUPES)
         setMessages(filtered);
 
         const unreadIds = filtered
@@ -69,7 +70,7 @@ export function useChat(conversationId: string, userId: string) {
     };
 
     fetchMessages();
-  }, [conversationId, userId, socket]);
+  }, [conversationId, userId]); // 🚫 socket REMOVED (IMPORTANT)
 
   /* -------------------------------------------
      RECEIVE MESSAGE (SOCKET)
@@ -78,16 +79,22 @@ export function useChat(conversationId: string, userId: string) {
     if (!socket) return;
 
     const handleReceiveMessage = (msg: Message) => {
-      // ❌ IGNORE YOUR OWN MESSAGES
       if (msg.senderId === userId) return;
-
       if (msg.conversationId !== conversationId) return;
       if (msg.deletedForAll) return;
       if (msg.deletedFor?.includes(userId)) return;
 
       setMessages((prev) => {
-        // 🛑 ABSOLUTE DUPLICATE GUARD
-        if (prev.some((m) => m.id === msg.id)) return prev;
+        const exists = prev.find((m) => m.id === msg.id);
+
+        // 🔁 UPDATE IF EXISTS (READ / DELIVERED)
+        if (exists) {
+          return prev.map((m) =>
+            m.id === msg.id ? { ...m, ...msg } : m
+          );
+        }
+
+        // ➕ ADD IF NEW
         return [...prev, msg];
       });
 
@@ -120,7 +127,7 @@ export function useChat(conversationId: string, userId: string) {
     }) => {
       setMessages((prev) =>
         prev.map((msg) =>
-          messageIds.includes(msg.id!)
+          msg.id && messageIds.includes(msg.id)
             ? { ...msg, status: "read" }
             : msg
         )
@@ -170,7 +177,6 @@ export function useChat(conversationId: string, userId: string) {
     // ✅ OPTIMISTIC UI
     setMessages((prev) => [...prev, tempMessage]);
 
-    // 🔥 SOCKET SEND (receiver only)
     socket?.emit("send_message", tempMessage);
 
     try {
@@ -184,7 +190,7 @@ export function useChat(conversationId: string, userId: string) {
 
       const savedMessage: Message = await res.json();
 
-      // 🔁 REPLACE TEMP MESSAGE WITH DB MESSAGE
+      // 🔁 REPLACE TEMP MESSAGE
       setMessages((prev) =>
         prev.map((m) => (m.id === tempId ? savedMessage : m))
       );

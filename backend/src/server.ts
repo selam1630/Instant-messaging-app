@@ -24,10 +24,10 @@ app.use("/api/user", userRoutes);
 app.use("/api/conversation", conversationRoutes);
 app.use("/api/files", fileRoutes);
 app.use("/uploads", express.static(path.join(__dirname, "config/uploads")));
-
 app.use("/api/otp", otpRoutes);
 app.use("/api/messages", messageRoutes);
-app.get("/", (req, res) => {
+
+app.get("/", (_, res) => {
   res.send("Instant Messaging API is running");
 });
 
@@ -36,15 +36,28 @@ const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: { origin: "*" },
 });
+
+/* -------------------------------------------
+   ONLINE USERS MAP
+--------------------------------------------*/
 const onlineUsers: Map<string, string> = new Map();
 
 const emitMessageToUser = (userId: string, event: string, data: any) => {
   const socketId = onlineUsers.get(userId);
-  if (socketId) io.to(socketId).emit(event, data);
+  if (socketId) {
+    io.to(socketId).emit(event, data);
+  }
 };
 
+/* -------------------------------------------
+   SOCKET CONNECTION
+--------------------------------------------*/
 io.on("connection", (socket) => {
   console.log("⚡ User connected:", socket.id);
+
+  /* -------------------------------------------
+     USER ONLINE
+  --------------------------------------------*/
   socket.on("user_online", async (userId: string) => {
     const existingSocket = onlineUsers.get(userId);
     if (existingSocket && existingSocket !== socket.id) {
@@ -61,34 +74,24 @@ io.on("connection", (socket) => {
 
     io.emit("online_users", Array.from(onlineUsers.keys()));
   });
-  socket.on("send_message", async (data) => {
-  try {
-    const { conversationId, senderId, receiverId, content, mediaUrls } = data;
 
-    const newMessage = await prisma.message.create({
-      data: {
-        conversationId,
-        senderId,
-        receiverId,
-        content,
-        mediaUrls: mediaUrls || [], // array of uploaded file URLs
-        status: "sent",
-      },
-    });
+  /* -------------------------------------------
+     SEND MESSAGE (SOCKET = REALTIME ONLY)
+  --------------------------------------------*/
+  socket.on("send_message", (data) => {
+    try {
+      const { receiverId } = data;
 
-    emitMessageToUser(receiverId, "receive_message", newMessage);
-    if (onlineUsers.has(receiverId)) {
-      await prisma.message.update({
-        where: { id: newMessage.id },
-        data: { status: "delivered" },
-      });
+      // 🔥 REALTIME FORWARD ONLY (NO DB WRITE)
+      emitMessageToUser(receiverId, "receive_message", data);
+    } catch (err) {
+      console.error("Socket send_message error:", err);
     }
-    socket.emit("message_sent", newMessage);
-  } catch (err) {
-    console.error("Error sending message:", err);
-  }
-});
+  });
 
+  /* -------------------------------------------
+     MARK AS READ
+  --------------------------------------------*/
   socket.on("mark_as_read", async ({ messageIds, readerId, senderId }) => {
     try {
       console.log("📘 Marking messages as READ:", messageIds);
@@ -98,11 +101,18 @@ io.on("connection", (socket) => {
         data: { status: "read" },
       });
 
-      emitMessageToUser(senderId, "messages_read", { messageIds, readerId });
+      emitMessageToUser(senderId, "messages_read", {
+        messageIds,
+        readerId,
+      });
     } catch (err) {
       console.error("Error marking messages as read:", err);
     }
   });
+
+  /* -------------------------------------------
+     DISCONNECT
+  --------------------------------------------*/
   socket.on("disconnect", async () => {
     console.log("🔴 User disconnected:", socket.id);
 
@@ -125,6 +135,10 @@ io.on("connection", (socket) => {
     }
   });
 });
+
+/* -------------------------------------------
+   SERVER START
+--------------------------------------------*/
 async function testDatabaseConnection() {
   try {
     await prisma.$connect();
