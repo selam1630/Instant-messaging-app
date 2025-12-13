@@ -11,6 +11,7 @@ import {
   Linking,
   Alert,
   PermissionsAndroid,
+  Pressable,
 } from "react-native";
 import { useChat, Message } from "../hooks/useChat";
 import { useSocket } from "../context/SocketContext";
@@ -18,8 +19,8 @@ import * as DocumentPicker from "@react-native-documents/picker";
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import NitroSound from "react-native-nitro-sound";
 import RNFS from "react-native-fs";
+import AudioRecorderPlayer from "react-native-audio-recorder-player"; // do not use `new` in latest versions
 
 dayjs.extend(relativeTime);
 
@@ -44,19 +45,23 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const [text, setText] = useState("");
   const [recording, setRecording] = useState(false);
   const [audioFile, setAudioFile] = useState<string | null>(null);
+  const [isRecorderStarted, setIsRecorderStarted] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
-  const recorderRef = useRef<any>(NitroSound); 
+  const audioRecorderPlayer = useRef(AudioRecorderPlayer).current; // just use the imported module
+
   useEffect(() => {
     if (messages.length > 0) {
       flatListRef.current?.scrollToEnd({ animated: true });
     }
   }, [messages]);
+
   const handleSend = () => {
     if (!text.trim()) return;
     sendMessage(receiverId, text.trim());
     setText("");
   };
+
   const pickAndSendFile = async () => {
     try {
       const res = await DocumentPicker.pick({ multiple: false, type: ["*/*"] });
@@ -79,6 +84,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
         console.error("Server error response:", text);
         return;
       }
+
       const data = await uploadRes.json();
       sendMessage(receiverId, data.fileUrl);
     } catch (err: any) {
@@ -86,6 +92,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       console.error("File upload error:", err);
     }
   };
+
   const deleteMessage = async (messageId: string, deleteForEveryone: boolean) => {
     try {
       if (!messageId) return;
@@ -119,6 +126,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       ].filter(Boolean) as any
     );
   };
+
   const requestAudioPermission = async () => {
     if (Platform.OS === "android") {
       const granted = await PermissionsAndroid.requestMultiple([
@@ -126,6 +134,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
       ]);
+      console.log("Permissions granted:", granted);
       return (
         granted["android.permission.RECORD_AUDIO"] === "granted" &&
         granted["android.permission.WRITE_EXTERNAL_STORAGE"] === "granted" &&
@@ -136,30 +145,50 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   };
 
   const startRecording = async () => {
+    if (recording) return;
     const hasPermission = await requestAudioPermission();
     if (!hasPermission) return;
 
     const path = Platform.select({
       ios: `${RNFS.DocumentDirectoryPath}/audio-${Date.now()}.m4a`,
-      android: `${RNFS.ExternalDirectoryPath}/audio-${Date.now()}.mp3`,
+      android: `${RNFS.DocumentDirectoryPath}/audio-${Date.now()}.mp3`,
     })!;
 
     try {
-      await recorderRef.current.startRecording(path);
+      await audioRecorderPlayer.startRecorder(path);
       setRecording(true);
+      setIsRecorderStarted(true);
       console.log("Recording started at:", path);
     } catch (err) {
+      setIsRecorderStarted(false);
       console.error("Recording error:", err);
     }
   };
 
   const stopRecording = async () => {
+    if (!isRecorderStarted) {
+      console.warn("Recorder was not started, cannot stop.");
+      return;
+    }
+
     try {
-      const filePath = await recorderRef.current.stopRecording();
+      const result = await audioRecorderPlayer.stopRecorder();
       setRecording(false);
+      setIsRecorderStarted(false);
+
+      const filePath =
+        typeof result === "string"
+          ? result
+          : (result as any)?.result ?? (result as any)?.path ?? "";
+
       setAudioFile(filePath);
       console.log("Recording stopped. File saved at:", filePath);
-      await sendAudioFile(filePath);
+
+      if (filePath) {
+        await sendAudioFile(filePath);
+      } else {
+        console.error("No valid file path returned from stopRecorder:", result);
+      }
     } catch (err) {
       console.error("Stop recording error:", err);
     }
@@ -191,6 +220,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       console.error("Audio send error:", err);
     }
   };
+
   const renderMessage = ({ item }: { item: Message }) => {
     const isSentByMe = item.senderId === userId;
     const isFile = item.content.includes("/uploads/");
@@ -228,6 +258,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       </TouchableOpacity>
     );
   };
+
   const receiverStatus = onlineUsers.find((u) => u.id === receiverId);
   const statusText =
     receiverStatus?.onlineStatus === "online"
@@ -244,30 +275,26 @@ export default function ChatScreen({ route }: ChatScreenProps) {
           <Text style={styles.receiverStatus}>{statusText}</Text>
         </View>
 
-       <FlatList
-  ref={flatListRef}
-  data={messages}
-  keyExtractor={(item, index) => item.id ?? `msg-${index}`}
-  renderItem={renderMessage}
+        <FlatList
+          ref={flatListRef}
+          data={messages}
+          keyExtractor={(item, index) => item.id ?? `msg-${index}`}
+          renderItem={renderMessage}
           contentContainerStyle={{ flexGrow: 1, justifyContent: messages.length === 0 ? "center" : "flex-end", paddingVertical: 10 }}
           ListEmptyComponent={<Text style={styles.noMessages}>No messages yet. Start chatting!</Text>}
         />
 
         <View style={styles.inputWrapper}>
-          {/* File picker */}
           <TouchableOpacity onPress={pickAndSendFile}>
             <Text style={styles.attachButton}>📎</Text>
           </TouchableOpacity>
 
-          {/* Audio record */}
-          <TouchableOpacity onPressIn={startRecording} onPressOut={stopRecording} style={{ marginRight: 10 }}>
+          <Pressable onPressIn={startRecording} onPressOut={stopRecording} style={{ marginRight: 10 }}>
             <Text style={styles.attachButton}>{recording ? "🎙️..." : "🎤"}</Text>
-          </TouchableOpacity>
+          </Pressable>
 
-          {/* Text input */}
           <TextInput style={styles.input} value={text} onChangeText={setText} placeholder="Type a message..." placeholderTextColor="rgba(255,255,255,0.6)" />
 
-          {/* Send button */}
           <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
             <Text style={styles.sendButtonText}>Send</Text>
           </TouchableOpacity>
