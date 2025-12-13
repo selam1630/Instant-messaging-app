@@ -20,10 +20,6 @@ export function useChat(conversationId: string, userId: string) {
   const [messages, setMessages] = useState<Message[]>([]);
 
   const BACKEND_URL = "http://localhost:4000";
-
-  /* -------------------------------------------
-     FETCH MESSAGES (ONCE PER CONVERSATION)
-  --------------------------------------------*/
   useEffect(() => {
     if (!conversationId || !userId) return;
 
@@ -48,8 +44,6 @@ export function useChat(conversationId: string, userId: string) {
               new Date(a.timestamp!).getTime() -
               new Date(b.timestamp!).getTime()
           );
-
-        // ✅ REPLACE STATE (NO MERGE → NO DUPES)
         setMessages(filtered);
 
         const unreadIds = filtered
@@ -70,11 +64,7 @@ export function useChat(conversationId: string, userId: string) {
     };
 
     fetchMessages();
-  }, [conversationId, userId]); // 🚫 socket REMOVED (IMPORTANT)
-
-  /* -------------------------------------------
-     RECEIVE MESSAGE (SOCKET)
-  --------------------------------------------*/
+  }, [conversationId, userId]);
   useEffect(() => {
     if (!socket) return;
 
@@ -86,15 +76,11 @@ export function useChat(conversationId: string, userId: string) {
 
       setMessages((prev) => {
         const exists = prev.find((m) => m.id === msg.id);
-
-        // 🔁 UPDATE IF EXISTS (READ / DELIVERED)
         if (exists) {
           return prev.map((m) =>
             m.id === msg.id ? { ...m, ...msg } : m
           );
         }
-
-        // ➕ ADD IF NEW
         return [...prev, msg];
       });
 
@@ -114,9 +100,6 @@ export function useChat(conversationId: string, userId: string) {
     };
   }, [socket, conversationId, userId]);
 
-  /* -------------------------------------------
-     READ RECEIPTS
-  --------------------------------------------*/
   useEffect(() => {
     if (!socket) return;
 
@@ -141,9 +124,6 @@ export function useChat(conversationId: string, userId: string) {
     };
   }, [socket]);
 
-  /* -------------------------------------------
-     MESSAGE DELETED
-  --------------------------------------------*/
   useEffect(() => {
     if (!socket) return;
 
@@ -157,10 +137,6 @@ export function useChat(conversationId: string, userId: string) {
       socket.off("message_deleted", handleMessageDeleted);
     };
   }, [socket]);
-
-  /* -------------------------------------------
-     SEND MESSAGE (OPTIMISTIC)
-  --------------------------------------------*/
   const sendMessage = async (receiverId: string, content: string) => {
     const tempId = uuidv4();
 
@@ -173,8 +149,6 @@ export function useChat(conversationId: string, userId: string) {
       status: "sent",
       timestamp: new Date().toISOString(),
     };
-
-    // ✅ OPTIMISTIC UI
     setMessages((prev) => [...prev, tempMessage]);
 
     socket?.emit("send_message", tempMessage);
@@ -189,8 +163,6 @@ export function useChat(conversationId: string, userId: string) {
       if (!res.ok) throw new Error("Failed to save message");
 
       const savedMessage: Message = await res.json();
-
-      // 🔁 REPLACE TEMP MESSAGE
       setMessages((prev) =>
         prev.map((m) => (m.id === tempId ? savedMessage : m))
       );

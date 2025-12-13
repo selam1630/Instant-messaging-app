@@ -27,6 +27,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import RNFS from "react-native-fs";
 import AudioRecorderPlayer from "react-native-audio-recorder-player"; // do not use `new` in latest versions
+import ActionSheet from "react-native-actionsheet";
 
 dayjs.extend(relativeTime);
 
@@ -55,6 +56,8 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
   const flatListRef = useRef<FlatList>(null);
   const audioRecorderPlayer = useRef(AudioRecorderPlayer).current;
+  const actionSheetRef = useRef<ActionSheet>(null);
+
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -99,6 +102,37 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       Alert.alert("Error", "An error occurred during file upload.");
     }
   };
+  const handleCamera = async (media: "photo" | "video") => {
+  const options = {
+    mediaType: media,
+    quality: 0.8,
+    saveToPhotos: true,
+    videoQuality: "high",       // only used if media === "video"
+    durationLimit: 60,          // max video length in seconds
+    includeBase64: false,
+  };
+
+  try {
+    const response = await launchCamera(options as any);
+
+    if (response.didCancel) {
+      console.log("User cancelled camera");
+    } else if (response.errorCode) {
+      console.error("Camera Error: ", response.errorMessage);
+      Alert.alert("Error", `Camera error: ${response.errorMessage}`);
+    } else if (response.assets && response.assets.length > 0) {
+      const asset = response.assets[0];
+      if (asset.uri && asset.fileName && asset.type) {
+        await uploadFileToServer(asset.uri, asset.fileName, asset.type);
+      } else {
+        Alert.alert("Error", "Captured media is missing required data.");
+      }
+    }
+  } catch (error) {
+    console.error("Error using camera:", error);
+  }
+};
+
   const handleMediaSelection = async (type: "camera" | "library") => {
     const options = {
       mediaType: "mixed" as MediaType, 
@@ -148,27 +182,8 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     }
   };
   const handleAttachmentPress = () => {
-    Alert.alert(
-      "Send Attachment",
-      "Choose the type of media or file to send.",
-      [
-        {
-          text: "Take Photo or Video (Camera)",
-          onPress: () => handleMediaSelection("camera"),
-        },
-        {
-          text: "Photo/Video Library (Gallery)",
-          onPress: () => handleMediaSelection("library"),
-        },
-        {
-          text: "Document/File",
-          onPress: pickAndSendFile, 
-        },
-        { text: "Cancel", style: "cancel" },
-      ],
-      { cancelable: true }
-    );
-  };
+  actionSheetRef.current?.show();
+};
 
   const deleteMessage = async (
     messageId: string,
@@ -429,6 +444,25 @@ export default function ChatScreen({ route }: ChatScreenProps) {
             <Text style={styles.sendButtonText}>Send</Text>
           </TouchableOpacity>
         </View>
+        <ActionSheet
+  ref={actionSheetRef}
+  title={'Send Attachment'}
+  options={[
+    'Take Photo',
+    'Record Video',
+    'Photo/Video Library',
+    'Document/File',
+    'Cancel'
+  ]}
+  cancelButtonIndex={4}
+  onPress={(index) => {
+    if (index === 0) handleCamera('photo');
+    if (index === 1) handleCamera('video');
+    if (index === 2) handleMediaSelection('library');
+    if (index === 3) pickAndSendFile();
+  }}
+/>
+
       </View>
     </KeyboardAvoidingView>
   );
