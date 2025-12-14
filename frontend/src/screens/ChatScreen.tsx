@@ -28,6 +28,8 @@ import RNFS from "react-native-fs";
 import AudioRecorderPlayer from "react-native-audio-recorder-player";
 import ActionSheet from "react-native-actionsheet";
 import { Image } from "react-native";
+import EmojiSelector, { Categories } from 'react-native-emoji-selector';
+
 
 dayjs.extend(relativeTime);
 
@@ -102,8 +104,6 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       }
 
       const data = await uploadRes.json();
-
-      // ✅ send as object, not string
       sendMessage(receiverId, {
         type: getMessageTypeFromMime(data.mimeType),
         url: data.fileUrl,
