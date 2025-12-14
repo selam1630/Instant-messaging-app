@@ -1,7 +1,5 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/db";
-
-// Add a contact by phone number
 export const addContact = async (req: Request, res: Response) => {
   const { userId, phoneNumber } = req.body;
 
@@ -10,19 +8,14 @@ export const addContact = async (req: Request, res: Response) => {
   }
 
   try {
-    // Find the user with the given phone number
     const contactUser = await prisma.user.findFirst({ where: { phoneNumber } });
 
     if (!contactUser) {
       return res.status(404).json({ message: "User with this phone number not found" });
     }
-
-    // Prevent adding self as contact
     if (contactUser.id === userId) {
       return res.status(400).json({ message: "You cannot add yourself as a contact" });
     }
-
-    // Check if contact already exists
     const existing = await prisma.contact.findFirst({
       where: { userId, contactId: contactUser.id },
     });
@@ -30,8 +23,6 @@ export const addContact = async (req: Request, res: Response) => {
     if (existing) {
       return res.status(400).json({ message: "Contact already added" });
     }
-
-    // Add contact
     const contact = await prisma.contact.create({
       data: {
         userId,
@@ -45,8 +36,6 @@ export const addContact = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
-// Get all contacts for a user
 export const getContacts = async (req: Request, res: Response) => {
   const { userId } = req.params;
 
@@ -57,7 +46,7 @@ export const getContacts = async (req: Request, res: Response) => {
   try {
     const contacts = await prisma.contact.findMany({
       where: { userId },
-      include: { contact: true }, // include contact user details
+      include: { contact: true },
       orderBy: { createdAt: "desc" },
     });
 

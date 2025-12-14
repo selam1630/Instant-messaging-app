@@ -18,7 +18,7 @@ export default function ChatListScreen({ route }: any) {
   const navigation = useNavigation<any>();
   const { userId } = route.params;
 
-  const [contacts, setContacts] = useState<any[]>([]);
+  const [conversations, setConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [phoneNumber, setPhoneNumber] = useState("");
 
@@ -28,47 +28,55 @@ export default function ChatListScreen({ route }: any) {
     default: "http://10.5.209.88:4000",
   });
 
-  // Fetch contacts for the user
-  const fetchContacts = async () => {
+  const fetchConversations = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/contacts/${userId}`);
-      const data = await res.json();
-
-      if (res.ok) {
-        setContacts(data);
+      const res = await fetch(`${BACKEND_URL}/api/conversation/list/${userId}`);
+      if (!res.ok) {
+        const text = await res.text();
+        console.error("Error fetching conversations:", text);
+        return;
       }
+      const data = await res.json();
+      setConversations(data.conversations || []);
     } catch (err) {
-      console.error("Error fetching contacts:", err);
+      console.error("Error fetching conversations:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchContacts();
+    fetchConversations();
   }, []);
 
-  // Start chat with a contact
-  const startChat = async (receiverId: string) => {
+  const startChat = async (receiverId: string, conversationId?: string) => {
     try {
-      const res = await fetch(
-        `${BACKEND_URL}/api/conversation/get-or-create?user1=${userId}&user2=${receiverId}`
-      );
-      const data = await res.json();
-
-      if (res.ok) {
-        navigation.navigate("Chat", {
-          conversationId: data.conversationId,
-          userId,
-          receiverId,
-        });
+      // If conversation already exists, use it
+      let convId = conversationId;
+      if (!convId) {
+        // Otherwise, create or get conversation from backend
+        const res = await fetch(
+          `${BACKEND_URL}/api/conversation/get-or-create?user1=${userId}&user2=${receiverId}`
+        );
+        if (!res.ok) {
+          const text = await res.text();
+          console.error("Error starting chat:", text);
+          return;
+        }
+        const data = await res.json();
+        convId = data.conversationId;
       }
+
+      navigation.navigate("Chat", {
+        conversationId: convId,
+        userId,
+        receiverId,
+      });
     } catch (err) {
       console.error("Error starting chat:", err);
     }
   };
 
-  // Logout
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem("token");
@@ -79,7 +87,6 @@ export default function ChatListScreen({ route }: any) {
     }
   };
 
-  // Add a contact by phone number
   const handleAddContact = async () => {
     if (!phoneNumber) return;
 
@@ -89,14 +96,15 @@ export default function ChatListScreen({ route }: any) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, phoneNumber }),
       });
+
       const data = await res.json();
 
       if (res.ok) {
         Alert.alert("Success", "Contact added!");
         setPhoneNumber("");
-        fetchContacts(); // refresh contacts list
+        fetchConversations(); // Refresh list
       } else {
-        Alert.alert("Error", data.message);
+        Alert.alert("Error", data.message || "Failed to add contact");
       }
     } catch (err) {
       console.error("Error adding contact:", err);
@@ -105,14 +113,21 @@ export default function ChatListScreen({ route }: any) {
   };
 
   const renderItem = ({ item }: any) => (
-    <TouchableOpacity style={styles.userBox} onPress={() => startChat(item.id)}>
+    <TouchableOpacity
+      style={styles.userBox}
+      onPress={() => startChat(item.participantId, item.conversationId)}
+    >
       <Image
-        source={{ uri: item.profileImage || "https://i.pravatar.cc/150" }}
+        source={{
+          uri: item.participantProfileImage || "https://i.pravatar.cc/150",
+        }}
         style={styles.avatar}
       />
       <View style={{ flex: 1 }}>
-        <Text style={styles.username}>{item.name}</Text>
-        <Text style={styles.email}>{item.email}</Text>
+        <Text style={styles.username}>{item.participantName}</Text>
+        <Text style={styles.email}>
+          {item.lastMessage ? JSON.stringify(item.lastMessage) : ""}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -129,7 +144,7 @@ export default function ChatListScreen({ route }: any) {
     <View style={styles.container}>
       {/* Header with Logout */}
       <View style={styles.headerWrapper}>
-        <Text style={styles.header}>Contacts</Text>
+        <Text style={styles.header}>Chats</Text>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
@@ -138,7 +153,7 @@ export default function ChatListScreen({ route }: any) {
       {/* Add Contact Input */}
       <View style={{ marginBottom: 16 }}>
         <TextInput
-          placeholder="Enter phone number"
+          placeholder="Enter phone number to add"
           value={phoneNumber}
           onChangeText={setPhoneNumber}
           style={styles.input}
@@ -150,10 +165,12 @@ export default function ChatListScreen({ route }: any) {
       </View>
 
       <FlatList
-        data={contacts}
-        keyExtractor={(item) => item.id}
+        data={conversations}
+        keyExtractor={(item) => item.participantId}
         renderItem={renderItem}
-        ListEmptyComponent={<Text style={styles.empty}>No contacts found</Text>}
+        ListEmptyComponent={
+          <Text style={styles.empty}>No conversations found</Text>
+        }
       />
     </View>
   );
