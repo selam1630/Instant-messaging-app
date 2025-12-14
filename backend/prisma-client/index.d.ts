@@ -71,7 +71,7 @@ export type MessagePayload<ExtArgs extends $Extensions.Args = $Extensions.Defaul
     id: string
     conversationId: string
     senderId: string
-    content: string | null
+    content: Prisma.JsonValue | null
     mediaUrls: string[]
     timestamp: Date
     status: string
@@ -3346,7 +3346,6 @@ export namespace Prisma {
     id: string | null
     conversationId: string | null
     senderId: string | null
-    content: string | null
     timestamp: Date | null
     status: string | null
     receiverId: string | null
@@ -3357,7 +3356,6 @@ export namespace Prisma {
     id: string | null
     conversationId: string | null
     senderId: string | null
-    content: string | null
     timestamp: Date | null
     status: string | null
     receiverId: string | null
@@ -3383,7 +3381,6 @@ export namespace Prisma {
     id?: true
     conversationId?: true
     senderId?: true
-    content?: true
     timestamp?: true
     status?: true
     receiverId?: true
@@ -3394,7 +3391,6 @@ export namespace Prisma {
     id?: true
     conversationId?: true
     senderId?: true
-    content?: true
     timestamp?: true
     status?: true
     receiverId?: true
@@ -3492,7 +3488,7 @@ export namespace Prisma {
     id: string
     conversationId: string
     senderId: string
-    content: string | null
+    content: JsonValue | null
     mediaUrls: string[]
     timestamp: Date
     status: string
@@ -5492,7 +5488,7 @@ export namespace Prisma {
     id?: StringFilter | string
     conversationId?: StringFilter | string
     senderId?: StringFilter | string
-    content?: StringNullableFilter | string | null
+    content?: JsonNullableFilter
     mediaUrls?: StringNullableListFilter
     timestamp?: DateTimeFilter | Date | string
     status?: StringFilter | string
@@ -5545,7 +5541,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter | string
     conversationId?: StringWithAggregatesFilter | string
     senderId?: StringWithAggregatesFilter | string
-    content?: StringNullableWithAggregatesFilter | string | null
+    content?: JsonNullableWithAggregatesFilter
     mediaUrls?: StringNullableListFilter
     timestamp?: DateTimeWithAggregatesFilter | Date | string
     status?: StringWithAggregatesFilter | string
@@ -5755,7 +5751,7 @@ export namespace Prisma {
 
   export type MessageCreateInput = {
     id?: string
-    content?: string | null
+    content?: InputJsonValue | null
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
@@ -5770,7 +5766,7 @@ export namespace Prisma {
     id?: string
     conversationId: string
     senderId: string
-    content?: string | null
+    content?: InputJsonValue | null
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
@@ -5780,7 +5776,7 @@ export namespace Prisma {
   }
 
   export type MessageUpdateInput = {
-    content?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: InputJsonValue | InputJsonValue | null
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
@@ -5794,7 +5790,7 @@ export namespace Prisma {
   export type MessageUncheckedUpdateInput = {
     conversationId?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
-    content?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: InputJsonValue | InputJsonValue | null
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
@@ -5807,7 +5803,7 @@ export namespace Prisma {
     id?: string
     conversationId: string
     senderId: string
-    content?: string | null
+    content?: InputJsonValue | null
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
@@ -5817,7 +5813,7 @@ export namespace Prisma {
   }
 
   export type MessageUpdateManyMutationInput = {
-    content?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: InputJsonValue | InputJsonValue | null
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
@@ -5829,7 +5825,7 @@ export namespace Prisma {
   export type MessageUncheckedUpdateManyInput = {
     conversationId?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
-    content?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: InputJsonValue | InputJsonValue | null
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
@@ -6104,6 +6100,18 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
+  export type JsonNullableFilter = 
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase>, Exclude<keyof Required<JsonNullableFilterBase>, 'path'>>,
+        Required<JsonNullableFilterBase>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase>, 'path'>>
+
+  export type JsonNullableFilterBase = {
+    equals?: InputJsonValue | null
+    not?: InputJsonValue | null
+    isSet?: boolean
+  }
 
   export type ConversationRelationFilter = {
     is?: ConversationWhereInput | null
@@ -6132,7 +6140,6 @@ export namespace Prisma {
     id?: SortOrder
     conversationId?: SortOrder
     senderId?: SortOrder
-    content?: SortOrder
     timestamp?: SortOrder
     status?: SortOrder
     receiverId?: SortOrder
@@ -6143,11 +6150,25 @@ export namespace Prisma {
     id?: SortOrder
     conversationId?: SortOrder
     senderId?: SortOrder
-    content?: SortOrder
     timestamp?: SortOrder
     status?: SortOrder
     receiverId?: SortOrder
     deletedForAll?: SortOrder
+  }
+  export type JsonNullableWithAggregatesFilter = 
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase = {
+    equals?: InputJsonValue | null
+    not?: InputJsonValue | null
+    _count?: NestedIntNullableFilter
+    _min?: NestedJsonNullableFilter
+    _max?: NestedJsonNullableFilter
+    isSet?: boolean
   }
 
   export type OTPCountOrderByAggregateInput = {
@@ -6486,10 +6507,22 @@ export namespace Prisma {
     _min?: NestedBoolFilter
     _max?: NestedBoolFilter
   }
+  export type NestedJsonNullableFilter = 
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase>, Exclude<keyof Required<NestedJsonNullableFilterBase>, 'path'>>,
+        Required<NestedJsonNullableFilterBase>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase>, 'path'>>
+
+  export type NestedJsonNullableFilterBase = {
+    equals?: InputJsonValue | null
+    not?: InputJsonValue | null
+    isSet?: boolean
+  }
 
   export type MessageCreateWithoutSenderInput = {
     id?: string
-    content?: string | null
+    content?: InputJsonValue | null
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
@@ -6502,7 +6535,7 @@ export namespace Prisma {
   export type MessageUncheckedCreateWithoutSenderInput = {
     id?: string
     conversationId: string
-    content?: string | null
+    content?: InputJsonValue | null
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
@@ -6543,7 +6576,7 @@ export namespace Prisma {
     id?: StringFilter | string
     conversationId?: StringFilter | string
     senderId?: StringFilter | string
-    content?: StringNullableFilter | string | null
+    content?: JsonNullableFilter
     mediaUrls?: StringNullableListFilter
     timestamp?: DateTimeFilter | Date | string
     status?: StringFilter | string
@@ -6554,7 +6587,7 @@ export namespace Prisma {
 
   export type MessageCreateWithoutConversationInput = {
     id?: string
-    content?: string | null
+    content?: InputJsonValue | null
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
@@ -6567,7 +6600,7 @@ export namespace Prisma {
   export type MessageUncheckedCreateWithoutConversationInput = {
     id?: string
     senderId: string
-    content?: string | null
+    content?: InputJsonValue | null
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
@@ -6708,7 +6741,7 @@ export namespace Prisma {
   export type MessageCreateManySenderInput = {
     id?: string
     conversationId: string
-    content?: string | null
+    content?: InputJsonValue | null
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
@@ -6718,7 +6751,7 @@ export namespace Prisma {
   }
 
   export type MessageUpdateWithoutSenderInput = {
-    content?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: InputJsonValue | InputJsonValue | null
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
@@ -6730,7 +6763,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateWithoutSenderInput = {
     conversationId?: StringFieldUpdateOperationsInput | string
-    content?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: InputJsonValue | InputJsonValue | null
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
@@ -6741,7 +6774,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateManyWithoutMessagesSentInput = {
     conversationId?: StringFieldUpdateOperationsInput | string
-    content?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: InputJsonValue | InputJsonValue | null
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
@@ -6753,7 +6786,7 @@ export namespace Prisma {
   export type MessageCreateManyConversationInput = {
     id?: string
     senderId: string
-    content?: string | null
+    content?: InputJsonValue | null
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
@@ -6763,7 +6796,7 @@ export namespace Prisma {
   }
 
   export type MessageUpdateWithoutConversationInput = {
-    content?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: InputJsonValue | InputJsonValue | null
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
@@ -6775,7 +6808,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateWithoutConversationInput = {
     senderId?: StringFieldUpdateOperationsInput | string
-    content?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: InputJsonValue | InputJsonValue | null
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
@@ -6786,7 +6819,7 @@ export namespace Prisma {
 
   export type MessageUncheckedUpdateManyWithoutMessagesInput = {
     senderId?: StringFieldUpdateOperationsInput | string
-    content?: NullableStringFieldUpdateOperationsInput | string | null
+    content?: InputJsonValue | InputJsonValue | null
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string

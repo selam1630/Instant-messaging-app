@@ -3,23 +3,48 @@ import { useSocket } from "../context/SocketContext";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 
+/* ============================
+   MESSAGE CONTENT TYPES
+============================ */
+
+export type FileMessageContent = {
+  type: "image" | "video" | "audio" | "file";
+  url: string;
+  name?: string;
+};
+
+export type MessageContent = string | FileMessageContent;
+
+/* ============================
+   MESSAGE INTERFACE
+============================ */
+
 export interface Message {
   id?: string;
   conversationId: string;
   senderId: string;
   receiverId: string;
-  content: string;
+  content: MessageContent;
   status?: "sent" | "delivered" | "read";
   timestamp?: string;
   deletedForAll?: boolean;
   deletedFor?: string[];
 }
 
+/* ============================
+   CHAT HOOK
+============================ */
+
 export function useChat(conversationId: string, userId: string) {
   const { socket } = useSocket();
   const [messages, setMessages] = useState<Message[]>([]);
 
   const BACKEND_URL = "http://localhost:4000";
+
+  /* ============================
+     FETCH MESSAGES
+  ============================ */
+
   useEffect(() => {
     if (!conversationId || !userId) return;
 
@@ -44,6 +69,7 @@ export function useChat(conversationId: string, userId: string) {
               new Date(a.timestamp!).getTime() -
               new Date(b.timestamp!).getTime()
           );
+
         setMessages(filtered);
 
         const unreadIds = filtered
@@ -65,6 +91,11 @@ export function useChat(conversationId: string, userId: string) {
 
     fetchMessages();
   }, [conversationId, userId]);
+
+  /* ============================
+     RECEIVE MESSAGE (SOCKET)
+  ============================ */
+
   useEffect(() => {
     if (!socket) return;
 
@@ -84,7 +115,7 @@ export function useChat(conversationId: string, userId: string) {
         return [...prev, msg];
       });
 
-      if (msg.receiverId === userId) {
+      if (msg.receiverId === userId && msg.id) {
         socket.emit("mark_as_read", {
           messageIds: [msg.id],
           readerId: userId,
@@ -99,6 +130,10 @@ export function useChat(conversationId: string, userId: string) {
       socket.off("receive_message", handleReceiveMessage);
     };
   }, [socket, conversationId, userId]);
+
+  /* ============================
+     READ RECEIPTS
+  ============================ */
 
   useEffect(() => {
     if (!socket) return;
@@ -124,6 +159,10 @@ export function useChat(conversationId: string, userId: string) {
     };
   }, [socket]);
 
+  /* ============================
+     DELETE MESSAGE
+  ============================ */
+
   useEffect(() => {
     if (!socket) return;
 
@@ -137,7 +176,15 @@ export function useChat(conversationId: string, userId: string) {
       socket.off("message_deleted", handleMessageDeleted);
     };
   }, [socket]);
-  const sendMessage = async (receiverId: string, content: string) => {
+
+  /* ============================
+     SEND MESSAGE
+  ============================ */
+
+  const sendMessage = async (
+    receiverId: string,
+    content: MessageContent
+  ) => {
     const tempId = uuidv4();
 
     const tempMessage: Message = {
@@ -149,8 +196,8 @@ export function useChat(conversationId: string, userId: string) {
       status: "sent",
       timestamp: new Date().toISOString(),
     };
-    setMessages((prev) => [...prev, tempMessage]);
 
+    setMessages((prev) => [...prev, tempMessage]);
     socket?.emit("send_message", tempMessage);
 
     try {
@@ -163,6 +210,7 @@ export function useChat(conversationId: string, userId: string) {
       if (!res.ok) throw new Error("Failed to save message");
 
       const savedMessage: Message = await res.json();
+
       setMessages((prev) =>
         prev.map((m) => (m.id === tempId ? savedMessage : m))
       );

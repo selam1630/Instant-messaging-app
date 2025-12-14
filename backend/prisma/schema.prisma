@@ -39,7 +39,7 @@ model Message {
   id             String        @id @map("_id") @db.ObjectId @default(auto())
   conversationId String        @db.ObjectId
   senderId       String        @db.ObjectId
-  content        String?
+  content        Json?
   mediaUrls      String[]
   timestamp      DateTime      @default(now())
   status         String
