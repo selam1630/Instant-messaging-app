@@ -12,6 +12,7 @@ model User {
   id           String    @id @map("_id") @db.ObjectId @default(auto())
   name         String?
   email        String    @unique
+  
   passwordHash String?
   profileImage String?
   onlineStatus String?
