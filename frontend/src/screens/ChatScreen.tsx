@@ -29,7 +29,6 @@ import AudioRecorderPlayer from "react-native-audio-recorder-player";
 import ActionSheet from "react-native-actionsheet";
 import { Image } from "react-native";
 import EmojiSelector, { Categories } from 'react-native-emoji-selector';
-
 dayjs.extend(relativeTime);
 
 const BACKEND_URL = "http://localhost:4000";
@@ -310,16 +309,18 @@ const handleLongPress = (item: Message) => {
             )}
           </>
         )}
-   {item.reactions && item.reactions.length > 0 && (
+ {item.reactions && item.reactions.length > 0 && (
   <View style={styles.reactionsRow}>
     {item.reactions.map((r, index) => (
-      <Text key={index} style={styles.reactionEmoji}>
+      <Text
+        key={index}
+        style={styles.reactionEmoji} // Use the style from StyleSheet
+      >
         {r.emoji}
       </Text>
     ))}
   </View>
 )}
-
        <View style={styles.metaRow}>
   {item.timestamp && (
     <Text style={styles.timestamp}>
@@ -344,7 +345,6 @@ const handleLongPress = (item: Message) => {
       : receiverStatus?.lastSeen
       ? `Last seen at ${dayjs(receiverStatus.lastSeen).format("MMM D, YYYY h:mm A")}`
       : "Offline";
-
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}>
       <View style={styles.container}>
@@ -445,15 +445,22 @@ received: {
   borderBottomLeftRadius: 16,
   borderBottomRightRadius: 16,
 },
-reactionsRow: {
-  flexDirection: "row",
-  marginTop: 4,
-  gap: 6,
-},
+ reactionsRow: {
+    flexDirection: "row",
+    marginTop: 4,
+    flexWrap: 'wrap', // Add this for better layout
+  },
+  
+  reactionEmoji: {
+    fontSize: 20,
+    lineHeight: 24,
+    marginRight: 6,
+    // Explicitly set letterSpacing to 0
+    letterSpacing: 0,
+    // Add includeFontPadding to prevent layout issues
+    includeFontPadding: false,
+  },
 
-reactionEmoji: {
-  fontSize: 16,
-},
 
 emojiPicker: {
   position: "absolute",
@@ -471,10 +478,10 @@ emojiPicker: {
   sentText: { color: "#4b0082" },
   receivedText: { color: "#fff" },
   fileText: { fontSize: 16, textDecorationLine: "underline" },
-  metaRow: { flexDirection: "row", justifyContent: "flex-end", marginTop: 4, gap: 6 },
-  timestamp: { fontSize: 10, color: "rgba(255,255,255,0.6)" },
-  readReceipt: { fontSize: 10, color: "rgba(255,255,255,0.6)", marginLeft: 6 },
-  inputWrapper: { flexDirection: "row", padding: 10, backgroundColor: "#7b2cbf", borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.2)", alignItems: "center" },
+  metaRow: { flexDirection: "row", justifyContent: "flex-end", marginTop: 4 },
+timestamp: { fontSize: 10, color: "rgba(255,255,255,0.6)", marginRight: 6 },
+readReceipt: { fontSize: 10, color: "rgba(255,255,255,0.6)" },
+ inputWrapper: { flexDirection: "row", padding: 10, backgroundColor: "#7b2cbf", borderTopWidth: 1, borderTopColor: "rgba(255,255,255,0.2)", alignItems: "center" },
   attachButton: { fontSize: 28, color: "#fff", marginRight: 10 },
   input: { flex: 1, backgroundColor: "rgba(255,255,255,0.2)", color: "#fff", borderRadius: 20, paddingHorizontal: 16, paddingVertical: Platform.OS === "ios" ? 12 : 8, fontSize: 16, marginRight: 8 },
   sendButton: { backgroundColor: "#fff", borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10 },
