@@ -107,8 +107,8 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     mediaType: media,
     quality: 0.8,
     saveToPhotos: true,
-    videoQuality: "high",       // only used if media === "video"
-    durationLimit: 60,          // max video length in seconds
+    videoQuality: "high",      
+    durationLimit: 60,          
     includeBase64: false,
   };
 
@@ -455,6 +455,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     'Cancel'
   ]}
   cancelButtonIndex={4}
+  tintColor="#7b2cbf"
   onPress={(index) => {
     if (index === 0) handleCamera('photo');
     if (index === 1) handleCamera('video');
@@ -462,7 +463,6 @@ export default function ChatScreen({ route }: ChatScreenProps) {
     if (index === 3) pickAndSendFile();
   }}
 />
-
       </View>
     </KeyboardAvoidingView>
   );
