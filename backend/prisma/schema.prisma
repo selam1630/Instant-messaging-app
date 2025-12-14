@@ -21,6 +21,8 @@ model User {
   updatedAt    DateTime  @updatedAt
   messagesSent Message[] @relation("UserMessages")
   isVerified   Boolean   @default(false)
+  contacts     Contact[] @relation("UserContacts")      // users that this user has added as contact
+  contactOf    Contact[] @relation("ContactOfUser")  
 }
 
 model Conversation {
@@ -60,4 +62,14 @@ model OTP {
   code      String
   expiresAt DateTime
   createdAt DateTime @default(now())
+}
+
+model Contact {
+  id        String   @id @map("_id") @db.ObjectId @default(auto())
+  userId    String   @db.ObjectId
+  contactId String   @db.ObjectId
+  createdAt DateTime @default(now())
+
+  user      User     @relation("UserContacts", fields: [userId], references: [id])
+  contact   User     @relation("ContactOfUser", fields: [contactId], references: [id])
 }

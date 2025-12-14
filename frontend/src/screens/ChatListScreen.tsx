@@ -8,17 +8,19 @@ import {
   Image,
   ActivityIndicator,
   Platform,
+  TextInput,
+  Alert,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
 
 export default function ChatListScreen({ route }: any) {
   const navigation = useNavigation<any>();
   const { userId } = route.params;
 
-  const [users, setUsers] = useState<any[]>([]);
+  const [contacts, setContacts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   const BACKEND_URL = Platform.select({
     ios: "http://localhost:4000",
@@ -26,26 +28,27 @@ export default function ChatListScreen({ route }: any) {
     default: "http://10.5.209.88:4000",
   });
 
-  const fetchUsers = async () => {
+  // Fetch contacts for the user
+  const fetchContacts = async () => {
     try {
-      const res = await fetch(`${BACKEND_URL}/api/user`);
+      const res = await fetch(`${BACKEND_URL}/api/contacts/${userId}`);
       const data = await res.json();
 
       if (res.ok) {
-        const otherUsers = data.filter((u: any) => u.id !== userId);
-        setUsers(otherUsers);
+        setContacts(data);
       }
     } catch (err) {
-      console.error("Error fetching users:", err);
+      console.error("Error fetching contacts:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUsers();
+    fetchContacts();
   }, []);
 
+  // Start chat with a contact
   const startChat = async (receiverId: string) => {
     try {
       const res = await fetch(
@@ -64,23 +67,45 @@ export default function ChatListScreen({ route }: any) {
       console.error("Error starting chat:", err);
     }
   };
-const handleLogout = async () => {
-  try {
-    await AsyncStorage.removeItem("token");
-    await AsyncStorage.removeItem("user");
-    navigation.replace("SignIn");
-  } catch (err) {
-    console.error("Logout error:", err);
-  }
-};
 
+  // Logout
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("token");
+      await AsyncStorage.removeItem("user");
+      navigation.replace("SignIn");
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
 
+  // Add a contact by phone number
+  const handleAddContact = async () => {
+    if (!phoneNumber) return;
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/contacts/add`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, phoneNumber }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        Alert.alert("Success", "Contact added!");
+        setPhoneNumber("");
+        fetchContacts(); // refresh contacts list
+      } else {
+        Alert.alert("Error", data.message);
+      }
+    } catch (err) {
+      console.error("Error adding contact:", err);
+      Alert.alert("Error", "Failed to add contact");
+    }
+  };
 
   const renderItem = ({ item }: any) => (
-    <TouchableOpacity
-      style={styles.userBox}
-      onPress={() => startChat(item.id)}
-    >
+    <TouchableOpacity style={styles.userBox} onPress={() => startChat(item.id)}>
       <Image
         source={{ uri: item.profileImage || "https://i.pravatar.cc/150" }}
         style={styles.avatar}
@@ -104,17 +129,31 @@ const handleLogout = async () => {
     <View style={styles.container}>
       {/* Header with Logout */}
       <View style={styles.headerWrapper}>
-        <Text style={styles.header}>Users</Text>
+        <Text style={styles.header}>Contacts</Text>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
 
+      {/* Add Contact Input */}
+      <View style={{ marginBottom: 16 }}>
+        <TextInput
+          placeholder="Enter phone number"
+          value={phoneNumber}
+          onChangeText={setPhoneNumber}
+          style={styles.input}
+          keyboardType="phone-pad"
+        />
+        <TouchableOpacity style={styles.addButton} onPress={handleAddContact}>
+          <Text style={{ color: "#fff", fontWeight: "bold" }}>Add Contact</Text>
+        </TouchableOpacity>
+      </View>
+
       <FlatList
-        data={users}
+        data={contacts}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        ListEmptyComponent={<Text style={styles.empty}>No users found</Text>}
+        ListEmptyComponent={<Text style={styles.empty}>No contacts found</Text>}
       />
     </View>
   );
@@ -148,6 +187,18 @@ const styles = StyleSheet.create({
     color: "#7b2cbf",
     fontWeight: "bold",
     fontSize: 14,
+  },
+  input: {
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 8,
+  },
+  addButton: {
+    backgroundColor: "#4a148c",
+    padding: 10,
+    borderRadius: 10,
+    alignItems: "center",
   },
   userBox: {
     flexDirection: "row",

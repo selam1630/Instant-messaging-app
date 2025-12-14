@@ -143,6 +143,13 @@ exports.Prisma.OTPScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.ContactScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  contactId: 'contactId',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -158,7 +165,8 @@ exports.Prisma.ModelName = {
   User: 'User',
   Conversation: 'Conversation',
   Message: 'Message',
-  OTP: 'OTP'
+  OTP: 'OTP',
+  Contact: 'Contact'
 };
 
 /**
