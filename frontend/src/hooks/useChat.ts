@@ -29,6 +29,13 @@ export interface Message {
   timestamp?: string;
   deletedForAll?: boolean;
   deletedFor?: string[];
+
+  // ✅ NEW: Emoji reactions
+  reactions?: {
+    emoji: string;
+    userId: string;
+    createdAt?: string;
+  }[];
 }
 
 /* ============================
@@ -178,6 +185,36 @@ export function useChat(conversationId: string, userId: string) {
   }, [socket]);
 
   /* ============================
+     MESSAGE REACTIONS (SOCKET)
+  ============================ */
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleMessageReacted = ({
+      messageId,
+      reactions,
+    }: {
+      messageId: string;
+      reactions: Message["reactions"];
+    }) => {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? { ...msg, reactions }
+            : msg
+        )
+      );
+    };
+
+    socket.on("message_reacted", handleMessageReacted);
+
+    return () => {
+      socket.off("message_reacted", handleMessageReacted);
+    };
+  }, [socket]);
+
+  /* ============================
      SEND MESSAGE
   ============================ */
 
@@ -219,5 +256,24 @@ export function useChat(conversationId: string, userId: string) {
     }
   };
 
-  return { messages, sendMessage, setMessages };
+  /* ============================
+     REACT TO MESSAGE
+  ============================ */
+
+  const reactToMessage = (messageId: string, emoji: string) => {
+    if (!socket) return;
+
+    socket.emit("react_message", {
+      messageId,
+      emoji,
+      userId,
+    });
+  };
+
+  return {
+    messages,
+    sendMessage,
+    setMessages,
+    reactToMessage, // ✅ NEW
+  };
 }

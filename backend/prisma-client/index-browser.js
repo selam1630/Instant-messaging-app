@@ -130,7 +130,8 @@ exports.Prisma.MessageScalarFieldEnum = {
   status: 'status',
   receiverId: 'receiverId',
   deletedFor: 'deletedFor',
-  deletedForAll: 'deletedForAll'
+  deletedForAll: 'deletedForAll',
+  reactions: 'reactions'
 };
 
 exports.Prisma.OTPScalarFieldEnum = {

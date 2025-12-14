@@ -50,6 +50,24 @@ const emitMessageToUser = (userId: string, event: string, data: any) => {
 };
 
 /* -------------------------------------------
+   EMIT TO BOTH USERS (HELPER)
+--------------------------------------------*/
+const emitToMessageUsers = async (
+  messageId: string,
+  event: string,
+  data: any
+) => {
+  const message = await prisma.message.findUnique({
+    where: { id: messageId },
+  });
+
+  if (!message) return;
+
+  emitMessageToUser(message.senderId, event, data);
+  emitMessageToUser(message.receiverId, event, data);
+};
+
+/* -------------------------------------------
    SOCKET CONNECTION
 --------------------------------------------*/
 io.on("connection", (socket) => {
@@ -81,8 +99,6 @@ io.on("connection", (socket) => {
   socket.on("send_message", (data) => {
     try {
       const { receiverId } = data;
-
-      // 🔥 REALTIME FORWARD ONLY (NO DB WRITE)
       emitMessageToUser(receiverId, "receive_message", data);
     } catch (err) {
       console.error("Socket send_message error:", err);
@@ -94,8 +110,6 @@ io.on("connection", (socket) => {
   --------------------------------------------*/
   socket.on("mark_as_read", async ({ messageIds, readerId, senderId }) => {
     try {
-      console.log("📘 Marking messages as READ:", messageIds);
-
       await prisma.message.updateMany({
         where: { id: { in: messageIds } },
         data: { status: "read" },
@@ -109,6 +123,49 @@ io.on("connection", (socket) => {
       console.error("Error marking messages as read:", err);
     }
   });
+
+  /* -------------------------------------------
+     REACT TO MESSAGE (EMOJI)
+  --------------------------------------------*/
+  socket.on(
+    "react_message",
+    async ({ messageId, emoji, userId }) => {
+      try {
+        const message = await prisma.message.findUnique({
+          where: { id: messageId },
+        });
+
+        if (!message) return;
+
+        const reactions = (message.reactions as any[]) || [];
+
+        const exists = reactions.find(
+          (r) => r.emoji === emoji && r.userId === userId
+        );
+
+        const updatedReactions = exists
+          ? reactions.filter(
+              (r) => !(r.emoji === emoji && r.userId === userId)
+            )
+          : [
+              ...reactions,
+              { emoji, userId, createdAt: new Date() },
+            ];
+
+        await prisma.message.update({
+          where: { id: messageId },
+          data: { reactions: updatedReactions },
+        });
+
+        await emitToMessageUsers(messageId, "message_reacted", {
+          messageId,
+          reactions: updatedReactions,
+        });
+      } catch (err) {
+        console.error("❌ react_message error:", err);
+      }
+    }
+  );
 
   /* -------------------------------------------
      DISCONNECT

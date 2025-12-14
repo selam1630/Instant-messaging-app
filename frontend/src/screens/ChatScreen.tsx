@@ -30,7 +30,6 @@ import ActionSheet from "react-native-actionsheet";
 import { Image } from "react-native";
 import EmojiSelector, { Categories } from 'react-native-emoji-selector';
 
-
 dayjs.extend(relativeTime);
 
 const BACKEND_URL = "http://localhost:4000";
@@ -63,13 +62,17 @@ interface ChatScreenProps {
 
 export default function ChatScreen({ route }: ChatScreenProps) {
   const { conversationId, userId, receiverId, receiverName } = route.params;
-  const { messages, sendMessage, setMessages } = useChat(conversationId, userId);
+  const { messages, sendMessage, setMessages, reactToMessage } =
+  useChat(conversationId, userId);
   const { onlineUsers } = useSocket();
 
   const [text, setText] = useState("");
   const [recording, setRecording] = useState(false);
   const [audioFile, setAudioFile] = useState<string | null>(null);
   const [isRecorderStarted, setIsRecorderStarted] = useState(false);
+  
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
 
   const flatListRef = useRef<FlatList>(null);
   const audioRecorderPlayer = useRef(AudioRecorderPlayer).current;
@@ -178,20 +181,31 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       console.error("Delete message error:", err);
     }
   };
+const handleLongPress = (item: Message) => {
+  if (!item.id) return;
+  const isSentByMe = item.senderId === userId;
 
-  const handleLongPress = (item: Message) => {
-    if (!item.id) return;
-    const isSentByMe = item.senderId === userId;
-    Alert.alert(
-      "Delete Message",
-      "Choose an option",
-      [
-        { text: "Delete for me", onPress: () => deleteMessage(item.id!, false) },
-        isSentByMe && { text: "Delete for everyone", onPress: () => deleteMessage(item.id!, true), style: "destructive" },
-        { text: "Cancel", style: "cancel" },
-      ].filter(Boolean) as any
-    );
-  };
+  Alert.alert(
+    "Message Options",
+    "Choose an action",
+    [
+      {
+        text: "React ❤️",
+        onPress: () => {
+          setSelectedMessage(item);
+          setShowEmojiPicker(true);
+        },
+      },
+      { text: "Delete for me", onPress: () => deleteMessage(item.id!, false) },
+      isSentByMe && {
+        text: "Delete for everyone",
+        onPress: () => deleteMessage(item.id!, true),
+        style: "destructive",
+      },
+      { text: "Cancel", style: "cancel" },
+    ].filter(Boolean) as any
+  );
+};
 
   const requestAudioPermission = async () => {
     if (Platform.OS === "android") {
@@ -254,7 +268,6 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       if (!uploadRes.ok) return;
 
       const data = await uploadRes.json();
-      // ✅ send as object
       sendMessage(receiverId, { type: "audio", url: data.fileUrl, name: data.originalName });
     } catch (err) {
       console.error("Audio send error:", err);
@@ -297,6 +310,15 @@ export default function ChatScreen({ route }: ChatScreenProps) {
             )}
           </>
         )}
+   {item.reactions && item.reactions.length > 0 && (
+  <View style={styles.reactionsRow}>
+    {item.reactions.map((r, index) => (
+      <Text key={index} style={styles.reactionEmoji}>
+        {r.emoji}
+      </Text>
+    ))}
+  </View>
+)}
 
        <View style={styles.metaRow}>
   {item.timestamp && (
@@ -379,6 +401,22 @@ export default function ChatScreen({ route }: ChatScreenProps) {
             if (index === 3) pickAndSendFile();
           }}
         />
+        {showEmojiPicker && selectedMessage && (
+  <View style={styles.emojiPicker}>
+    <EmojiSelector
+      category={Categories.all}
+      onEmojiSelected={(emoji) => {
+        reactToMessage(selectedMessage.id!, emoji);
+        setShowEmojiPicker(false);
+        setSelectedMessage(null);
+      }}
+      showSearchBar={false}
+      showTabs
+      showHistory
+    />
+  </View>
+)}
+
       </View>
     </KeyboardAvoidingView>
   );
@@ -406,6 +444,27 @@ received: {
   borderTopRightRadius: 16,
   borderBottomLeftRadius: 16,
   borderBottomRightRadius: 16,
+},
+reactionsRow: {
+  flexDirection: "row",
+  marginTop: 4,
+  gap: 6,
+},
+
+reactionEmoji: {
+  fontSize: 16,
+},
+
+emojiPicker: {
+  position: "absolute",
+  bottom: 70,
+  left: 0,
+  right: 0,
+  height: 300,
+  backgroundColor: "#fff",
+  borderTopLeftRadius: 16,
+  borderTopRightRadius: 16,
+  overflow: "hidden",
 },
 
    messageText: { fontSize: 16 },

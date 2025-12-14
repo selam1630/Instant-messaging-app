@@ -78,6 +78,7 @@ export type MessagePayload<ExtArgs extends $Extensions.Args = $Extensions.Defaul
     receiverId: string
     deletedFor: string[]
     deletedForAll: boolean
+    reactions: Prisma.JsonValue[]
   }, ExtArgs["result"]["message"]>
   composites: {}
 }
@@ -3373,6 +3374,7 @@ export namespace Prisma {
     receiverId: number
     deletedFor: number
     deletedForAll: number
+    reactions: number
     _all: number
   }
 
@@ -3408,6 +3410,7 @@ export namespace Prisma {
     receiverId?: true
     deletedFor?: true
     deletedForAll?: true
+    reactions?: true
     _all?: true
   }
 
@@ -3495,6 +3498,7 @@ export namespace Prisma {
     receiverId: string
     deletedFor: string[]
     deletedForAll: boolean
+    reactions: JsonValue[]
     _count: MessageCountAggregateOutputType | null
     _min: MessageMinAggregateOutputType | null
     _max: MessageMaxAggregateOutputType | null
@@ -3525,6 +3529,7 @@ export namespace Prisma {
     receiverId?: boolean
     deletedFor?: boolean
     deletedForAll?: boolean
+    reactions?: boolean
     conversation?: boolean | ConversationArgs<ExtArgs>
     sender?: boolean | UserArgs<ExtArgs>
   }, ExtArgs["result"]["message"]>
@@ -3540,6 +3545,7 @@ export namespace Prisma {
     receiverId?: boolean
     deletedFor?: boolean
     deletedForAll?: boolean
+    reactions?: boolean
   }
 
   export type MessageInclude<ExtArgs extends $Extensions.Args = $Extensions.DefaultArgs> = {
@@ -5324,7 +5330,8 @@ export namespace Prisma {
     status: 'status',
     receiverId: 'receiverId',
     deletedFor: 'deletedFor',
-    deletedForAll: 'deletedForAll'
+    deletedForAll: 'deletedForAll',
+    reactions: 'reactions'
   };
 
   export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
@@ -5495,6 +5502,7 @@ export namespace Prisma {
     receiverId?: StringFilter | string
     deletedFor?: StringNullableListFilter
     deletedForAll?: BoolFilter | boolean
+    reactions?: JsonNullableListFilter
     conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
     sender?: XOR<UserRelationFilter, UserWhereInput>
   }
@@ -5510,6 +5518,7 @@ export namespace Prisma {
     receiverId?: SortOrder
     deletedFor?: SortOrder
     deletedForAll?: SortOrder
+    reactions?: SortOrder
     conversation?: ConversationOrderByWithRelationInput
     sender?: UserOrderByWithRelationInput
   }
@@ -5529,6 +5538,7 @@ export namespace Prisma {
     receiverId?: SortOrder
     deletedFor?: SortOrder
     deletedForAll?: SortOrder
+    reactions?: SortOrder
     _count?: MessageCountOrderByAggregateInput
     _max?: MessageMaxOrderByAggregateInput
     _min?: MessageMinOrderByAggregateInput
@@ -5548,6 +5558,7 @@ export namespace Prisma {
     receiverId?: StringWithAggregatesFilter | string
     deletedFor?: StringNullableListFilter
     deletedForAll?: BoolWithAggregatesFilter | boolean
+    reactions?: JsonNullableListFilter
   }
 
   export type OTPWhereInput = {
@@ -5758,6 +5769,7 @@ export namespace Prisma {
     receiverId: string
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
     conversation: ConversationCreateNestedOneWithoutMessagesInput
     sender: UserCreateNestedOneWithoutMessagesSentInput
   }
@@ -5773,6 +5785,7 @@ export namespace Prisma {
     receiverId: string
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
   }
 
   export type MessageUpdateInput = {
@@ -5783,6 +5796,7 @@ export namespace Prisma {
     receiverId?: StringFieldUpdateOperationsInput | string
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
     sender?: UserUpdateOneRequiredWithoutMessagesSentNestedInput
   }
@@ -5797,6 +5811,7 @@ export namespace Prisma {
     receiverId?: StringFieldUpdateOperationsInput | string
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
   }
 
   export type MessageCreateManyInput = {
@@ -5810,6 +5825,7 @@ export namespace Prisma {
     receiverId: string
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
   }
 
   export type MessageUpdateManyMutationInput = {
@@ -5820,6 +5836,7 @@ export namespace Prisma {
     receiverId?: StringFieldUpdateOperationsInput | string
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
   }
 
   export type MessageUncheckedUpdateManyInput = {
@@ -5832,6 +5849,7 @@ export namespace Prisma {
     receiverId?: StringFieldUpdateOperationsInput | string
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
   }
 
   export type OTPCreateInput = {
@@ -6112,6 +6130,20 @@ export namespace Prisma {
     not?: InputJsonValue | null
     isSet?: boolean
   }
+  export type JsonNullableListFilter = 
+    | PatchUndefined<
+        Either<Required<JsonNullableListFilterBase>, Exclude<keyof Required<JsonNullableListFilterBase>, 'path'>>,
+        Required<JsonNullableListFilterBase>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableListFilterBase>, 'path'>>
+
+  export type JsonNullableListFilterBase = {
+    equals?: Enumerable<InputJsonValue> | null
+    has?: InputJsonValue | null
+    hasEvery?: Enumerable<InputJsonValue>
+    hasSome?: Enumerable<InputJsonValue>
+    isEmpty?: boolean
+  }
 
   export type ConversationRelationFilter = {
     is?: ConversationWhereInput | null
@@ -6134,6 +6166,7 @@ export namespace Prisma {
     receiverId?: SortOrder
     deletedFor?: SortOrder
     deletedForAll?: SortOrder
+    reactions?: SortOrder
   }
 
   export type MessageMaxOrderByAggregateInput = {
@@ -6318,6 +6351,10 @@ export namespace Prisma {
     set: Enumerable<string>
   }
 
+  export type MessageCreatereactionsInput = {
+    set: Enumerable<InputJsonValue>
+  }
+
   export type ConversationCreateNestedOneWithoutMessagesInput = {
     create?: XOR<ConversationCreateWithoutMessagesInput, ConversationUncheckedCreateWithoutMessagesInput>
     connectOrCreate?: ConversationCreateOrConnectWithoutMessagesInput
@@ -6338,6 +6375,11 @@ export namespace Prisma {
   export type MessageUpdatedeletedForInput = {
     set?: Enumerable<string>
     push?: string | Enumerable<string>
+  }
+
+  export type MessageUpdatereactionsInput = {
+    set?: Enumerable<InputJsonValue>
+    push?: InputJsonValue | Enumerable<InputJsonValue>
   }
 
   export type ConversationUpdateOneRequiredWithoutMessagesNestedInput = {
@@ -6529,6 +6571,7 @@ export namespace Prisma {
     receiverId: string
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
     conversation: ConversationCreateNestedOneWithoutMessagesInput
   }
 
@@ -6542,6 +6585,7 @@ export namespace Prisma {
     receiverId: string
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
   }
 
   export type MessageCreateOrConnectWithoutSenderInput = {
@@ -6583,6 +6627,7 @@ export namespace Prisma {
     receiverId?: StringFilter | string
     deletedFor?: StringNullableListFilter
     deletedForAll?: BoolFilter | boolean
+    reactions?: JsonNullableListFilter
   }
 
   export type MessageCreateWithoutConversationInput = {
@@ -6594,6 +6639,7 @@ export namespace Prisma {
     receiverId: string
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
     sender: UserCreateNestedOneWithoutMessagesSentInput
   }
 
@@ -6607,6 +6653,7 @@ export namespace Prisma {
     receiverId: string
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
   }
 
   export type MessageCreateOrConnectWithoutConversationInput = {
@@ -6748,6 +6795,7 @@ export namespace Prisma {
     receiverId: string
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
   }
 
   export type MessageUpdateWithoutSenderInput = {
@@ -6758,6 +6806,7 @@ export namespace Prisma {
     receiverId?: StringFieldUpdateOperationsInput | string
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
   }
 
@@ -6770,6 +6819,7 @@ export namespace Prisma {
     receiverId?: StringFieldUpdateOperationsInput | string
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
   }
 
   export type MessageUncheckedUpdateManyWithoutMessagesSentInput = {
@@ -6781,6 +6831,7 @@ export namespace Prisma {
     receiverId?: StringFieldUpdateOperationsInput | string
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
   }
 
   export type MessageCreateManyConversationInput = {
@@ -6793,6 +6844,7 @@ export namespace Prisma {
     receiverId: string
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
   }
 
   export type MessageUpdateWithoutConversationInput = {
@@ -6803,6 +6855,7 @@ export namespace Prisma {
     receiverId?: StringFieldUpdateOperationsInput | string
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
     sender?: UserUpdateOneRequiredWithoutMessagesSentNestedInput
   }
 
@@ -6815,6 +6868,7 @@ export namespace Prisma {
     receiverId?: StringFieldUpdateOperationsInput | string
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
   }
 
   export type MessageUncheckedUpdateManyWithoutMessagesInput = {
@@ -6826,6 +6880,7 @@ export namespace Prisma {
     receiverId?: StringFieldUpdateOperationsInput | string
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
   }
 
 
