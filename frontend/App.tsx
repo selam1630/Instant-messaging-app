@@ -14,7 +14,7 @@ export type RootStackParamList = {
   Landing: undefined;
   SignIn: undefined;
   SignUp: undefined;
-  VerifyEmail: { email: string; name: string; password: string };
+  VerifyEmail: { email: string; name: string; password: string ;phoneNumber: string };
   ChatList: { userId: string };
   Chat: { conversationId: string; userId: string; receiverId: string };
 };

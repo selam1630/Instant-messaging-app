@@ -21,6 +21,7 @@ export type UserPayload<ExtArgs extends $Extensions.Args = $Extensions.DefaultAr
     id: string
     name: string | null
     email: string
+    phoneNumber: string | null
     passwordHash: string | null
     profileImage: string | null
     onlineStatus: string | null
@@ -1291,6 +1292,7 @@ export namespace Prisma {
     id: string | null
     name: string | null
     email: string | null
+    phoneNumber: string | null
     passwordHash: string | null
     profileImage: string | null
     onlineStatus: string | null
@@ -1304,6 +1306,7 @@ export namespace Prisma {
     id: string | null
     name: string | null
     email: string | null
+    phoneNumber: string | null
     passwordHash: string | null
     profileImage: string | null
     onlineStatus: string | null
@@ -1317,6 +1320,7 @@ export namespace Prisma {
     id: number
     name: number
     email: number
+    phoneNumber: number
     passwordHash: number
     profileImage: number
     onlineStatus: number
@@ -1332,6 +1336,7 @@ export namespace Prisma {
     id?: true
     name?: true
     email?: true
+    phoneNumber?: true
     passwordHash?: true
     profileImage?: true
     onlineStatus?: true
@@ -1345,6 +1350,7 @@ export namespace Prisma {
     id?: true
     name?: true
     email?: true
+    phoneNumber?: true
     passwordHash?: true
     profileImage?: true
     onlineStatus?: true
@@ -1358,6 +1364,7 @@ export namespace Prisma {
     id?: true
     name?: true
     email?: true
+    phoneNumber?: true
     passwordHash?: true
     profileImage?: true
     onlineStatus?: true
@@ -1445,6 +1452,7 @@ export namespace Prisma {
     id: string
     name: string | null
     email: string
+    phoneNumber: string | null
     passwordHash: string | null
     profileImage: string | null
     onlineStatus: string | null
@@ -1475,6 +1483,7 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     email?: boolean
+    phoneNumber?: boolean
     passwordHash?: boolean
     profileImage?: boolean
     onlineStatus?: boolean
@@ -1490,6 +1499,7 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     email?: boolean
+    phoneNumber?: boolean
     passwordHash?: boolean
     profileImage?: boolean
     onlineStatus?: boolean
@@ -5296,6 +5306,7 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     email: 'email',
+    phoneNumber: 'phoneNumber',
     passwordHash: 'passwordHash',
     profileImage: 'profileImage',
     onlineStatus: 'onlineStatus',
@@ -5376,6 +5387,7 @@ export namespace Prisma {
     id?: StringFilter | string
     name?: StringNullableFilter | string | null
     email?: StringFilter | string
+    phoneNumber?: StringNullableFilter | string | null
     passwordHash?: StringNullableFilter | string | null
     profileImage?: StringNullableFilter | string | null
     onlineStatus?: StringNullableFilter | string | null
@@ -5390,6 +5402,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     email?: SortOrder
+    phoneNumber?: SortOrder
     passwordHash?: SortOrder
     profileImage?: SortOrder
     onlineStatus?: SortOrder
@@ -5409,6 +5422,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     email?: SortOrder
+    phoneNumber?: SortOrder
     passwordHash?: SortOrder
     profileImage?: SortOrder
     onlineStatus?: SortOrder
@@ -5428,6 +5442,7 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter | string
     name?: StringNullableWithAggregatesFilter | string | null
     email?: StringWithAggregatesFilter | string
+    phoneNumber?: StringNullableWithAggregatesFilter | string | null
     passwordHash?: StringNullableWithAggregatesFilter | string | null
     profileImage?: StringNullableWithAggregatesFilter | string | null
     onlineStatus?: StringNullableWithAggregatesFilter | string | null
@@ -5610,6 +5625,7 @@ export namespace Prisma {
     id?: string
     name?: string | null
     email: string
+    phoneNumber?: string | null
     passwordHash?: string | null
     profileImage?: string | null
     onlineStatus?: string | null
@@ -5624,6 +5640,7 @@ export namespace Prisma {
     id?: string
     name?: string | null
     email: string
+    phoneNumber?: string | null
     passwordHash?: string | null
     profileImage?: string | null
     onlineStatus?: string | null
@@ -5637,6 +5654,7 @@ export namespace Prisma {
   export type UserUpdateInput = {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     profileImage?: NullableStringFieldUpdateOperationsInput | string | null
     onlineStatus?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5650,6 +5668,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateInput = {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     profileImage?: NullableStringFieldUpdateOperationsInput | string | null
     onlineStatus?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5664,6 +5683,7 @@ export namespace Prisma {
     id?: string
     name?: string | null
     email: string
+    phoneNumber?: string | null
     passwordHash?: string | null
     profileImage?: string | null
     onlineStatus?: string | null
@@ -5676,6 +5696,7 @@ export namespace Prisma {
   export type UserUpdateManyMutationInput = {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     profileImage?: NullableStringFieldUpdateOperationsInput | string | null
     onlineStatus?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5688,6 +5709,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateManyInput = {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     profileImage?: NullableStringFieldUpdateOperationsInput | string | null
     onlineStatus?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5977,6 +5999,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     email?: SortOrder
+    phoneNumber?: SortOrder
     passwordHash?: SortOrder
     profileImage?: SortOrder
     onlineStatus?: SortOrder
@@ -5990,6 +6013,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     email?: SortOrder
+    phoneNumber?: SortOrder
     passwordHash?: SortOrder
     profileImage?: SortOrder
     onlineStatus?: SortOrder
@@ -6003,6 +6027,7 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     email?: SortOrder
+    phoneNumber?: SortOrder
     passwordHash?: SortOrder
     profileImage?: SortOrder
     onlineStatus?: SortOrder
@@ -6708,6 +6733,7 @@ export namespace Prisma {
     id?: string
     name?: string | null
     email: string
+    phoneNumber?: string | null
     passwordHash?: string | null
     profileImage?: string | null
     onlineStatus?: string | null
@@ -6721,6 +6747,7 @@ export namespace Prisma {
     id?: string
     name?: string | null
     email: string
+    phoneNumber?: string | null
     passwordHash?: string | null
     profileImage?: string | null
     onlineStatus?: string | null
@@ -6764,6 +6791,7 @@ export namespace Prisma {
   export type UserUpdateWithoutMessagesSentInput = {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     profileImage?: NullableStringFieldUpdateOperationsInput | string | null
     onlineStatus?: NullableStringFieldUpdateOperationsInput | string | null
@@ -6776,6 +6804,7 @@ export namespace Prisma {
   export type UserUncheckedUpdateWithoutMessagesSentInput = {
     name?: NullableStringFieldUpdateOperationsInput | string | null
     email?: StringFieldUpdateOperationsInput | string
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
     passwordHash?: NullableStringFieldUpdateOperationsInput | string | null
     profileImage?: NullableStringFieldUpdateOperationsInput | string | null
     onlineStatus?: NullableStringFieldUpdateOperationsInput | string | null

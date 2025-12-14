@@ -12,6 +12,7 @@ export default function SignUpScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const BACKEND_URL = Platform.select({
@@ -27,6 +28,10 @@ export default function SignUpScreen() {
       setError("Please fill out all fields.");
       return;
     }
+if (!phoneNumber) {
+  setError("Please enter your phone number.");
+  return;
+}
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
@@ -37,10 +42,10 @@ export default function SignUpScreen() {
 
     try {
       const otpResponse = await fetch(`${BACKEND_URL}/api/otp/send`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email, phoneNumber }),
+});
 
       const otpData = await otpResponse.json();
 
@@ -51,9 +56,8 @@ export default function SignUpScreen() {
       }
 
       Alert.alert("OTP Sent", `An OTP has been sent to ${email}.`);
+navigation.navigate("VerifyEmail", { email, name, password, phoneNumber } as any);
 
-      // 2️⃣ Navigate to VerifyEmailScreen with all user info
-      navigation.navigate("VerifyEmail", { email, name, password });
 
     } catch (err) {
       console.error(err);
@@ -89,6 +93,16 @@ export default function SignUpScreen() {
           onChangeText={setEmail}
         />
       </View>
+  <View style={styles.inputContainer}>
+  <TextInput
+    placeholder="Phone Number"
+    placeholderTextColor="#ddd"
+    style={styles.input}
+    keyboardType="phone-pad"
+    value={phoneNumber}
+    onChangeText={setPhoneNumber}
+  />
+</View>
 
       <View style={styles.inputContainer}>
         <Lock color="white" size={20} style={styles.icon} />

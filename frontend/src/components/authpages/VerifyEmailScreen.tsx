@@ -11,7 +11,8 @@ export default function VerifyEmailScreen() {
 
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, "VerifyEmail">>();
-  const { email, name, password } = route.params;
+const { email, name, password, phoneNumber } = route.params;
+
 
   const BACKEND_URL = Platform.select({
     ios: "http://localhost:4000",
@@ -47,7 +48,7 @@ export default function VerifyEmailScreen() {
       const registerResponse = await fetch(`${BACKEND_URL}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, password, phoneNumber }),
       });
       const registerData = await registerResponse.json();
 

@@ -10,12 +10,11 @@ const generateNumericOTP = (length: number) => {
   }
   return otp;
 };
-
-// Send OTP
 export const sendOTP = async (req: Request, res: Response) => {
-  const { email, name } = req.body;
+  const { email, name, phoneNumber } = req.body;
 
   if (!email) return res.status(400).json({ message: "Email is required" });
+  if (!phoneNumber) return res.status(400).json({ message: "Phone number is required" });
 
   try {
     // 1️⃣ Delete any expired OTPs for this email
@@ -33,6 +32,7 @@ export const sendOTP = async (req: Request, res: Response) => {
         data: {
           email,
           name: name || null,
+          phoneNumber,   // ✅ save phone number here
           isVerified: false,
         },
       });

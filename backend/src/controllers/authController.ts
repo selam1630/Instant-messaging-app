@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { prisma } from "../config/db";
 import { hashPassword, comparePasswords, generateToken } from "../utils/auth";
 export const register = async (req: Request, res: Response) => {
-  const { name, email, password, profileImage } = req.body;
+  const { name, email, password, profileImage, phoneNumber } = req.body;
 
   if (!email || !password) {
     return res.status(400).json({ message: "Email and password are required" });
@@ -13,9 +13,23 @@ export const register = async (req: Request, res: Response) => {
     if (!existingUser) {
       return res.status(400).json({ message: "Please request OTP first" });
     }
+
     if (!existingUser.isVerified) {
       return res.status(400).json({ message: "Email not verified. Verify OTP first." });
     }
+
+    if (phoneNumber) {
+      const existingPhoneUser = await prisma.user.findFirst({
+        where: { phoneNumber },
+      });
+
+      if (existingPhoneUser && existingPhoneUser.email !== email) {
+        return res.status(400).json({
+          message: "Phone number already in use",
+        });
+      }
+    }
+
     const passwordHash = await hashPassword(password);
 
     const updatedUser = await prisma.user.update({
@@ -24,8 +38,10 @@ export const register = async (req: Request, res: Response) => {
         name: name || existingUser.name,
         profileImage: profileImage || existingUser.profileImage,
         passwordHash,
+        phoneNumber: phoneNumber || existingUser.phoneNumber,
       },
     });
+
     const token = generateToken({ userId: updatedUser.id });
 
     res.status(201).json({
@@ -35,6 +51,7 @@ export const register = async (req: Request, res: Response) => {
         name: updatedUser.name,
         email: updatedUser.email,
         profileImage: updatedUser.profileImage,
+        phoneNumber: updatedUser.phoneNumber,
       },
       token,
     });
@@ -43,6 +60,7 @@ export const register = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
