@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
   backgroundColor: "#d6bbff",
   alignSelf: "flex-end",
   borderTopLeftRadius: 16,
-  borderTopRightRadius: 0,    // flat on top-right
+  borderTopRightRadius: 0,    
   borderBottomLeftRadius: 16,
   borderBottomRightRadius: 16,
 },
@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
 received: {
   backgroundColor: "rgba(255,255,255,0.2)",
   alignSelf: "flex-start",
-  borderTopLeftRadius: 0,     // flat on top-left
+  borderTopLeftRadius: 0,     
   borderTopRightRadius: 16,
   borderBottomLeftRadius: 16,
   borderBottomRightRadius: 16,
@@ -448,16 +448,14 @@ received: {
  reactionsRow: {
     flexDirection: "row",
     marginTop: 4,
-    flexWrap: 'wrap', // Add this for better layout
+    flexWrap: 'wrap', 
   },
   
   reactionEmoji: {
     fontSize: 20,
     lineHeight: 24,
     marginRight: 6,
-    // Explicitly set letterSpacing to 0
     letterSpacing: 0,
-    // Add includeFontPadding to prevent layout issues
     includeFontPadding: false,
   },
 
