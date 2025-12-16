@@ -66,15 +66,14 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const { onlineUsers } = useSocket();
 
   const [text, setText] = useState("");
-  const [recording, setRecording] = useState(false);
-  const [audioFile, setAudioFile] = useState<string | null>(null);
-  const [isRecorderStarted, setIsRecorderStarted] = useState(false);
-  
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+const audioRecorderPlayer = AudioRecorderPlayer;
+const [recording, setRecording] = useState(false);
+const [audioPath, setAudioPath] = useState<string | null>(null);
 
   const flatListRef = useRef<FlatList>(null);
-  const audioRecorderPlayer = useRef(AudioRecorderPlayer).current;
+  
   const actionSheetRef = useRef<ActionSheet>(null);
 
   useEffect(() => {
@@ -205,6 +204,51 @@ const handleLongPress = (item: Message) => {
     ].filter(Boolean) as any
   );
 };
+const startRecording = async () => {
+  const hasPermission = await requestAudioPermission();
+  if (!hasPermission) return;
+
+  const path = Platform.select({
+    ios: 'voiceMessage.m4a',
+    android: `${RNFS.ExternalCachesDirectoryPath}/voiceMessage.mp3`,
+  })!;
+
+  setAudioPath(path);
+
+  try {
+    await audioRecorderPlayer.startRecorder(path);
+    audioRecorderPlayer.addRecordBackListener((e) => {
+      // e.current_position has the time in ms
+      return;
+    });
+
+    setRecording(true); // update state for UI (mic button color, etc.)
+    console.log('Recording started at:', path);
+  } catch (err) {
+    console.error('Recording start error:', err);
+  }
+};
+const stopRecording = async () => {
+  if (!recording) {
+    console.warn("Recorder not started yet");
+    return;
+  }
+
+  try {
+    const result: any = await audioRecorderPlayer.stopRecorder();
+    audioRecorderPlayer.removeRecordBackListener();
+    setRecording(false);
+
+    const filePath = result.result;
+    setAudioPath(filePath);
+    console.log('Recording stopped, saved at:', filePath);
+
+    if (filePath) sendAudioFile(filePath);
+  } catch (err) {
+    console.error('Recording stop error:', err);
+  }
+};
+
 
   const requestAudioPermission = async () => {
     if (Platform.OS === "android") {
@@ -220,45 +264,22 @@ const handleLongPress = (item: Message) => {
     return true;
   };
 
-  const startRecording = async () => {
-    if (recording) return;
-    if (!(await requestAudioPermission())) return;
-
-    const path = Platform.select({
-      ios: `${RNFS.DocumentDirectoryPath}/audio-${Date.now()}.m4a`,
-      android: `${RNFS.DocumentDirectoryPath}/audio-${Date.now()}.mp3`,
-    })!;
+  const sendAudioFile = async (filePathOrResult: string | { result?: string; filePath?: string }) => {
     try {
-      await audioRecorderPlayer.startRecorder(path);
-      setRecording(true);
-      setIsRecorderStarted(true);
-    } catch (err) {
-      setIsRecorderStarted(false);
-      console.error("Recording error:", err);
-    }
-  };
+      const filePath =
+        typeof filePathOrResult === "string"
+          ? filePathOrResult
+          : filePathOrResult.result ?? filePathOrResult.filePath ?? "";
 
-  const stopRecording = async () => {
-    if (!isRecorderStarted) return;
-    try {
-      const result = await audioRecorderPlayer.stopRecorder();
-      setRecording(false);
-      setIsRecorderStarted(false);
+      if (!filePath) {
+        console.error("No audio file path provided:", filePathOrResult);
+        return;
+      }
 
-      const filePath = typeof result === "string" ? result : (result as any)?.result ?? (result as any)?.path ?? "";
-      setAudioFile(filePath);
-      if (filePath) await sendAudioFile(filePath);
-    } catch (err) {
-      console.error("Stop recording error:", err);
-    }
-  };
-
-  const sendAudioFile = async (filePath: string) => {
-    try {
       const fileName = filePath.split("/").pop();
       const formData = new FormData();
       formData.append("file", {
-        uri: Platform.OS === "android" ? "file://" + filePath : filePath,
+        uri: Platform.OS === "android" ? (filePath.startsWith("file://") ? filePath : "file://" + filePath) : filePath,
         type: "audio/mpeg",
         name: fileName,
       } as any);
@@ -314,7 +335,7 @@ const handleLongPress = (item: Message) => {
     {item.reactions.map((r, index) => (
       <Text
         key={index}
-        style={styles.reactionEmoji} // Use the style from StyleSheet
+        style={styles.reactionEmoji} 
       >
         {r.emoji}
       </Text>
@@ -370,11 +391,6 @@ const handleLongPress = (item: Message) => {
           <TouchableOpacity onPress={handleAttachmentPress}>
             <Text style={styles.attachButton}>📎</Text>
           </TouchableOpacity>
-
-          <Pressable onPressIn={startRecording} onPressOut={stopRecording} style={{ marginRight: 10 }}>
-            <Text style={styles.attachButton}>{recording ? "🎙️..." : "🎤"}</Text>
-          </Pressable>
-
           <TextInput
             style={styles.input}
             value={text}
@@ -386,6 +402,13 @@ const handleLongPress = (item: Message) => {
           <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
             <Text style={styles.sendButtonText}>Send</Text>
           </TouchableOpacity>
+   <TouchableOpacity
+    style={[styles.micButton, recording && styles.micButtonRecording]}
+    onPressIn={startRecording}
+    onPressOut={stopRecording}
+  >
+    <Text style={styles.micIcon}>🎤</Text>
+  </TouchableOpacity>
         </View>
 
         <ActionSheet
@@ -416,7 +439,6 @@ const handleLongPress = (item: Message) => {
     />
   </View>
 )}
-
       </View>
     </KeyboardAvoidingView>
   );
@@ -450,14 +472,30 @@ received: {
     marginTop: 4,
     flexWrap: 'wrap', 
   },
-  
-  reactionEmoji: {
-    fontSize: 20,
-    lineHeight: 24,
-    marginRight: 6,
-    letterSpacing: 0,
-    includeFontPadding: false,
-  },
+reactionEmoji: {
+  fontSize: 20,
+  lineHeight: 24,
+  marginRight: 6,
+  letterSpacing: 0,
+  includeFontPadding: true,
+},
+
+micButton: {
+  width: 48,
+  height: 48,
+  borderRadius: 24,
+  backgroundColor: "#fff",
+  alignItems: "center",
+  justifyContent: "center",
+  marginLeft: 8,
+},
+micButtonRecording: {
+  backgroundColor: "#ff4b5c", 
+},
+micIcon: {
+  fontSize: 24,
+  color: "#7b2cbf",
+},
 
 
 emojiPicker: {
