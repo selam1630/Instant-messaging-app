@@ -25,6 +25,7 @@ import * as DocumentPicker from "@react-native-documents/picker";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import RNFS from "react-native-fs";
+import AudioRecord from 'react-native-audio-record';
 import AudioRecorderPlayer from "react-native-audio-recorder-player";
 import ActionSheet from "react-native-actionsheet";
 import { Image } from "react-native";
@@ -68,9 +69,8 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const [text, setText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-const audioRecorderPlayer = AudioRecorderPlayer;
-const [recording, setRecording] = useState(false);
 const [audioPath, setAudioPath] = useState<string | null>(null);
+const [isRecording, setIsRecording] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
   
@@ -79,6 +79,17 @@ const [audioPath, setAudioPath] = useState<string | null>(null);
   useEffect(() => {
     if (messages.length > 0) flatListRef.current?.scrollToEnd({ animated: true });
   }, [messages]);
+
+  useEffect(() => {
+    // initialize AudioRecord (react-native-audio-record)
+    AudioRecord.init({
+      sampleRate: 16000,
+      channels: 1,
+      bitsPerSample: 16,
+      audioSource: 6,
+      wavFile: 'voiceMessage.wav',
+    });
+  }, []);
 
   const handleSend = () => {
     if (!text.trim()) return;
@@ -206,60 +217,68 @@ const handleLongPress = (item: Message) => {
 };
 const startRecording = async () => {
   const hasPermission = await requestAudioPermission();
-  if (!hasPermission) return;
-
-  const path = Platform.select({
-    ios: 'voiceMessage.m4a',
-    android: `${RNFS.ExternalCachesDirectoryPath}/voiceMessage.mp3`,
-  })!;
-
-  setAudioPath(path);
-
-  try {
-    await audioRecorderPlayer.startRecorder(path);
-    audioRecorderPlayer.addRecordBackListener((e) => {
-      // e.current_position has the time in ms
-      return;
-    });
-
-    setRecording(true); // update state for UI (mic button color, etc.)
-    console.log('Recording started at:', path);
-  } catch (err) {
-    console.error('Recording start error:', err);
-  }
-};
-const stopRecording = async () => {
-  if (!recording) {
-    console.warn("Recorder not started yet");
+  if (!hasPermission) {
+    Alert.alert('Permissions needed', 'Microphone permission is required to record audio');
     return;
   }
 
   try {
-    const result: any = await audioRecorderPlayer.stopRecorder();
-    audioRecorderPlayer.removeRecordBackListener();
-    setRecording(false);
-
-    const filePath = result.result;
-    setAudioPath(filePath);
-    console.log('Recording stopped, saved at:', filePath);
-
-    if (filePath) sendAudioFile(filePath);
+    console.log('AudioRecord.start()');
+    AudioRecord.start();
+    setIsRecording(true);
   } catch (err) {
-    console.error('Recording stop error:', err);
+    console.error('AudioRecord start error:', err);
+    Alert.alert('Error', 'Could not start recording');
+  }
+};
+
+const stopRecording = async () => {
+  if (!isRecording) {
+    console.warn('Not recording');
+    return;
+  }
+
+  try {
+    const audioFile = await AudioRecord.stop(); // returns file path
+    setIsRecording(false);
+    console.log('Recording stopped, file:', audioFile);
+    if (audioFile) {
+      setAudioPath(audioFile);
+      sendAudioFile(audioFile);
+    }
+  } catch (err) {
+    console.error('AudioRecord stop error:', err);
+    Alert.alert('Error', 'Could not stop recording');
+    setIsRecording(false);
   }
 };
 
 
   const requestAudioPermission = async () => {
     if (Platform.OS === "android") {
+      const sdk = Platform.Version as number;
+      if (sdk >= 33) {
+        const granted = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+          // Android 13+ uses READ_MEDIA_AUDIO for audio files
+          PermissionsAndroid.PERMISSIONS.READ_MEDIA_AUDIO as any,
+        ]);
+        return (
+          granted['android.permission.RECORD_AUDIO'] === 'granted' &&
+          (granted['android.permission.READ_MEDIA_AUDIO'] === 'granted' || granted['android.permission.READ_MEDIA_AUDIO'] === undefined)
+        );
+      }
+
       const granted = await PermissionsAndroid.requestMultiple([
         PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
         PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
       ]);
-      return granted["android.permission.RECORD_AUDIO"] === "granted" &&
-             granted["android.permission.WRITE_EXTERNAL_STORAGE"] === "granted" &&
-             granted["android.permission.READ_EXTERNAL_STORAGE"] === "granted";
+      return (
+        granted['android.permission.RECORD_AUDIO'] === 'granted' &&
+        granted['android.permission.WRITE_EXTERNAL_STORAGE'] === 'granted' &&
+        granted['android.permission.READ_EXTERNAL_STORAGE'] === 'granted'
+      );
     }
     return true;
   };
@@ -402,13 +421,31 @@ const stopRecording = async () => {
           <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
             <Text style={styles.sendButtonText}>Send</Text>
           </TouchableOpacity>
-   <TouchableOpacity
-    style={[styles.micButton, recording && styles.micButtonRecording]}
-    onPressIn={startRecording}
-    onPressOut={stopRecording}
-  >
-    <Text style={styles.micIcon}>🎤</Text>
-  </TouchableOpacity>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity
+              style={[styles.micButton, isRecording && styles.micButtonRecording]}
+              onPress={() => (isRecording ? stopRecording() : startRecording())}
+            >
+              <Text style={styles.micIcon}>{isRecording ? '⏹️' : '🎤'}</Text>
+            </TouchableOpacity>
+
+            {audioPath && !isRecording && (
+              <TouchableOpacity
+                style={styles.retryButton}
+                onPress={() => {
+                  // allow re-record by clearing the saved path
+                  setAudioPath(null);
+                }}
+              >
+                <Text style={styles.retryIcon}>↻</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
+        <View style={{ paddingHorizontal: 12, paddingBottom: 8 }}>
+          <Text style={styles.debugText}>{isRecording ? 'Recording...' : audioPath ? `Recorded: ${audioPath.split('/').pop()}` : ''}</Text>
         </View>
 
         <ActionSheet
@@ -496,6 +533,20 @@ micIcon: {
   fontSize: 24,
   color: "#7b2cbf",
 },
+  retryButton: {
+    marginLeft: 8,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  retryIcon: {
+    fontSize: 18,
+    color: '#7b2cbf',
+  },
+  debugText: { color: 'rgba(255,255,255,0.8)', fontSize: 12, marginTop: 6 },
 
 
 emojiPicker: {
