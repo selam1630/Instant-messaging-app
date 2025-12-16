@@ -81,7 +81,6 @@ const [isRecording, setIsRecording] = useState(false);
   }, [messages]);
 
   useEffect(() => {
-    // initialize AudioRecord (react-native-audio-record)
     AudioRecord.init({
       sampleRate: 16000,
       channels: 1,
@@ -312,11 +311,9 @@ const stopRecording = async () => {
       console.error("Audio send error:", err);
     }
   };
-
   const renderMessage = ({ item }: { item: Message }) => {
     const isSentByMe = item.senderId === userId;
     const content = item.content as MessageContent;
-
     return (
       <TouchableOpacity
         onLongPress={() => handleLongPress(item)}
@@ -373,11 +370,9 @@ const stopRecording = async () => {
     </Text>
   )}
 </View>
-
       </TouchableOpacity>
     );
   };
-
   const receiverStatus = onlineUsers.find((u) => u.id === receiverId);
   const statusText =
     receiverStatus?.onlineStatus === "online"
@@ -417,7 +412,6 @@ const stopRecording = async () => {
             placeholder="Type a message..."
             placeholderTextColor="rgba(255,255,255,0.6)"
           />
-
           <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
             <Text style={styles.sendButtonText}>Send</Text>
           </TouchableOpacity>
