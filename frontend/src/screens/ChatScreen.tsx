@@ -172,7 +172,6 @@ const [isRecording, setIsRecording] = useState(false);
       if (err?.code !== "DOCUMENT_PICKER_CANCELED") Alert.alert("Error", "Could not select document.");
     }
   };
-
   const handleAttachmentPress = () => actionSheetRef.current?.show();
 
   const deleteMessage = async (messageId: string, deleteForEveryone: boolean) => {

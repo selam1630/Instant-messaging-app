@@ -11,7 +11,6 @@ type LandingPageNavigationProp = NativeStackNavigationProp<RootStackParamList, '
 type Props = {
   navigation: LandingPageNavigationProp;
 };
-
 const LandingPage: React.FC<Props> = ({ navigation }) => {
   return (
     <LinearGradient colors={['#3b0066', '#7b2cbf', '#c77dff']} style={styles.container}>
