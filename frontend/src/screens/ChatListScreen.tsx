@@ -148,7 +148,7 @@ export default function ChatListScreen({ route }: any) {
         <View style={styles.headerActions}>
           <TouchableOpacity
             style={styles.createGroupButton}
-            onPress={() => navigation.navigate('GroupChat', { conversationId: '', userId, groupName: 'New Group', participantIds: [userId] })}
+            onPress={() => navigation.navigate('CreateGroup', { userId })}
           >
             <Text style={styles.createGroupText}>Create Group</Text>
           </TouchableOpacity>
