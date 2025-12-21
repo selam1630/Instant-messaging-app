@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSocket } from "../context/SocketContext";
 
 export default function ChatListScreen({ route }: any) {
   const navigation = useNavigation<any>();
@@ -48,6 +49,35 @@ export default function ChatListScreen({ route }: any) {
   useEffect(() => {
     fetchConversations();
   }, []);
+
+  // listen for newly created groups via socket and add locally
+  const { socket } = useSocket();
+  useEffect(() => {
+    if (!socket) return;
+    const handler = (payload: any) => {
+      if (!payload || !payload.participantIds) return;
+      if (!payload.participantIds.includes(userId)) return;
+      // avoid duplicate
+      setConversations((prev) => {
+        if (prev.find((c) => c.conversationId === payload.conversationId)) return prev;
+        return [
+          {
+            isGroup: true,
+            conversationId: payload.conversationId,
+            groupName: payload.name || "Group",
+            participantIds: payload.participantIds,
+            lastMessage: null,
+          },
+          ...prev,
+        ];
+      });
+    };
+
+    socket.on("group_created", handler);
+    return () => {
+      socket.off("group_created", handler);
+    };
+  }, [socket, userId]);
 
   const startChat = async (receiverId: string, conversationId?: string) => {
     try {
@@ -115,19 +145,26 @@ export default function ChatListScreen({ route }: any) {
   const renderItem = ({ item }: any) => (
     <TouchableOpacity
       style={styles.userBox}
-      onPress={() => startChat(item.participantId, item.conversationId)}
+      onPress={() => {
+        if (item.isGroup) {
+          navigation.navigate("GroupChat", {
+            conversationId: item.conversationId,
+            userId,
+            groupName: item.groupName,
+            participantIds: item.participantIds || [userId],
+          });
+        } else {
+          startChat(item.participantId, item.conversationId);
+        }
+      }}
     >
       <Image
-        source={{
-          uri: item.participantProfileImage || "https://i.pravatar.cc/150",
-        }}
+        source={{ uri: item.participantProfileImage || (item.isGroup ? "https://i.pravatar.cc/150?u=group" : "https://i.pravatar.cc/150") }}
         style={styles.avatar}
       />
       <View style={{ flex: 1 }}>
-        <Text style={styles.username}>{item.participantName}</Text>
-        <Text style={styles.email}>
-          {item.lastMessage ? JSON.stringify(item.lastMessage) : ""}
-        </Text>
+        <Text style={styles.username}>{item.isGroup ? (item.groupName || "Group") : item.participantName}</Text>
+        <Text style={styles.email}>{item.lastMessage ? JSON.stringify(item.lastMessage) : ""}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -174,11 +211,9 @@ export default function ChatListScreen({ route }: any) {
 
       <FlatList
         data={conversations}
-        keyExtractor={(item) => item.participantId}
+        keyExtractor={(item) => item.conversationId ?? item.participantId}
         renderItem={renderItem}
-        ListEmptyComponent={
-          <Text style={styles.empty}>No conversations found</Text>
-        }
+        ListEmptyComponent={<Text style={styles.empty}>No conversations found</Text>}
       />
     </View>
   );

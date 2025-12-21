@@ -3,6 +3,7 @@ import http from "http";
 import dotenv from "dotenv";
 import cors from "cors";
 import { Server as SocketIOServer } from "socket.io";
+import { setIO, setOnlineUsers } from "./utils/socketManager";
 import { prisma } from "./config/db";
 
 import authRoutes from "./routes/authRoutes";
@@ -38,12 +39,16 @@ app.get("/", (_, res) => {
 const server = http.createServer(app);
 
 /* ---------------- SOCKET SETUP ---------------- */
+/* ---------------- ONLINE USERS MAP ---------------- */
+const onlineUsers: Map<string, string> = new Map();
+
 const io = new SocketIOServer(server, {
   cors: { origin: "*" },
 });
 
-/* ---------------- ONLINE USERS MAP ---------------- */
-const onlineUsers: Map<string, string> = new Map();
+// expose io and onlineUsers to controllers
+setIO(io);
+setOnlineUsers(onlineUsers);
 
 const emitMessageToUser = (userId?: string | null, event?: string, data?: any) => {
   if (!userId) return;

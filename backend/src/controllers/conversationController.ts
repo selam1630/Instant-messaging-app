@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/db";
+import { emitToUser } from "../utils/socketManager";
 
 /**
  * Create or get an existing private conversation between two users
@@ -63,10 +64,21 @@ export const getUserConversations = async (req: Request, res: Response) => {
       include: { contact: true },
     });
     const convUsers = conversations.map((conv) => {
+      if (conv.type === "group") {
+        return {
+          isGroup: true,
+          conversationId: conv.id,
+          groupName: (conv as any).name || "Group",
+          participantIds: conv.participantIds,
+          lastMessage: conv.messages[0]?.content || null,
+        };
+      }
+
       const otherUserId = conv.participantIds.find((id) => id !== userId);
       return {
+        isGroup: false,
         participantId: otherUserId,
-        participantName: otherUserId ? null : "Unknown", 
+        participantName: otherUserId ? null : "Unknown",
         participantProfileImage: null,
         participantEmail: null,
         lastMessage: conv.messages[0]?.content || null,
@@ -74,7 +86,7 @@ export const getUserConversations = async (req: Request, res: Response) => {
       };
     });
     const merged = contacts.map((c) => {
-      const existingConv = convUsers.find((u) => u.participantId === c.contact.id);
+      const existingConv = convUsers.find((u) => !u.isGroup && u.participantId === c.contact.id);
       return {
         participantId: c.contact.id,
         participantName: c.contact.name,
@@ -82,20 +94,36 @@ export const getUserConversations = async (req: Request, res: Response) => {
         participantEmail: c.contact.email,
         lastMessage: existingConv?.lastMessage || null,
         conversationId: existingConv?.conversationId || null,
+        isGroup: false,
       };
     });
 
     // 5. Include conversations with participants not in contacts
     const remainingConvs = convUsers
-      .filter((u) => !contacts.find((c) => c.contact.id === u.participantId))
-      .map((u) => ({
-        participantId: u.participantId,
-        participantName: "Unknown",
-        participantProfileImage: null,
-        participantEmail: null,
-        lastMessage: u.lastMessage,
-        conversationId: u.conversationId,
-      }));
+      .filter((u) => {
+        if (u.isGroup) return true;
+        return !contacts.find((c) => c.contact.id === u.participantId);
+      })
+      .map((u) => {
+        if ((u as any).isGroup) {
+          return {
+            isGroup: true,
+            conversationId: (u as any).conversationId,
+            groupName: (u as any).groupName,
+            participantIds: (u as any).participantIds,
+            lastMessage: (u as any).lastMessage,
+          };
+        }
+        return {
+          participantId: u.participantId,
+          participantName: "Unknown",
+          participantProfileImage: null,
+          participantEmail: null,
+          lastMessage: u.lastMessage,
+          conversationId: u.conversationId,
+          isGroup: false,
+        };
+      });
 
     // 6. Combine both
     const finalList = [...merged, ...remainingConvs];
@@ -123,6 +151,17 @@ export const createGroupConversation = async (req: Request, res: Response) => {
         adminIds: [adminId],
         groupImage,
       },
+    });
+
+    // notify participants via socket that a new group was created
+    const payload = {
+      conversationId: conversation.id,
+      name: conversation.name,
+      participantIds: conversation.participantIds,
+      type: "group",
+    };
+    (conversation.participantIds || []).forEach((pid) => {
+      emitToUser(pid, "group_created", payload);
     });
 
     res.json(conversation);
