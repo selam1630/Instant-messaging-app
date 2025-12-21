@@ -174,8 +174,6 @@ io.on("connection", (socket) => {
     }
   });
 });
-
-/* ---------------- SERVER START ---------------- */
 async function startServer() {
   try {
     await prisma.$connect();
