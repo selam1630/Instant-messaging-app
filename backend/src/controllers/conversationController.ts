@@ -58,27 +58,21 @@ export const getUserConversations = async (req: Request, res: Response) => {
       where: { participantIds: { has: userId } },
       include: { messages: { orderBy: { timestamp: "desc" }, take: 1 } },
     });
-
-    // 2. Fetch contacts for the user
     const contacts = await prisma.contact.findMany({
       where: { userId },
       include: { contact: true },
     });
-
-    // 3. Map conversations to participants (excluding self)
     const convUsers = conversations.map((conv) => {
       const otherUserId = conv.participantIds.find((id) => id !== userId);
       return {
         participantId: otherUserId,
-        participantName: otherUserId ? null : "Unknown", // we'll fetch name from contacts later if needed
+        participantName: otherUserId ? null : "Unknown", 
         participantProfileImage: null,
         participantEmail: null,
         lastMessage: conv.messages[0]?.content || null,
         conversationId: conv.id,
       };
     });
-
-    // 4. Merge with contacts (avoid duplicates)
     const merged = contacts.map((c) => {
       const existingConv = convUsers.find((u) => u.participantId === c.contact.id);
       return {
@@ -110,5 +104,29 @@ export const getUserConversations = async (req: Request, res: Response) => {
   } catch (err) {
     console.error("Fetch conversations failed:", err);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const createGroupConversation = async (req: Request, res: Response) => {
+  try {
+    const { name, participants, adminId, groupImage } = req.body;
+
+    if (!name || participants.length < 2) {
+      return res.status(400).json({ message: "Group needs name & members" });
+    }
+
+    const conversation = await prisma.conversation.create({
+      data: {
+        type: "group",
+        name,
+        participantIds: [...new Set([...participants, adminId])],
+        adminIds: [adminId],
+        groupImage,
+      },
+    });
+
+    res.json(conversation);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to create group" });
   }
 };

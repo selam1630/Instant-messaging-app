@@ -52,6 +52,9 @@ export type ConversationPayload<ExtArgs extends $Extensions.Args = $Extensions.D
      * FIXED: participantIds should be plain strings, not ObjectId fields
      */
     participantIds: string[]
+    name: string | null
+    groupImage: string | null
+    adminIds: string[]
     lastMessageId: string | null
     createdAt: Date
     updatedAt: Date
@@ -78,7 +81,7 @@ export type MessagePayload<ExtArgs extends $Extensions.Args = $Extensions.Defaul
     mediaUrls: string[]
     timestamp: Date
     status: string
-    receiverId: string
+    receiverId: string | null
     deletedFor: string[]
     deletedForAll: boolean
     reactions: Prisma.JsonValue[]
@@ -2524,6 +2527,8 @@ export namespace Prisma {
   export type ConversationMinAggregateOutputType = {
     id: string | null
     type: string | null
+    name: string | null
+    groupImage: string | null
     lastMessageId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2532,6 +2537,8 @@ export namespace Prisma {
   export type ConversationMaxAggregateOutputType = {
     id: string | null
     type: string | null
+    name: string | null
+    groupImage: string | null
     lastMessageId: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -2541,6 +2548,9 @@ export namespace Prisma {
     id: number
     type: number
     participantIds: number
+    name: number
+    groupImage: number
+    adminIds: number
     lastMessageId: number
     createdAt: number
     updatedAt: number
@@ -2551,6 +2561,8 @@ export namespace Prisma {
   export type ConversationMinAggregateInputType = {
     id?: true
     type?: true
+    name?: true
+    groupImage?: true
     lastMessageId?: true
     createdAt?: true
     updatedAt?: true
@@ -2559,6 +2571,8 @@ export namespace Prisma {
   export type ConversationMaxAggregateInputType = {
     id?: true
     type?: true
+    name?: true
+    groupImage?: true
     lastMessageId?: true
     createdAt?: true
     updatedAt?: true
@@ -2568,6 +2582,9 @@ export namespace Prisma {
     id?: true
     type?: true
     participantIds?: true
+    name?: true
+    groupImage?: true
+    adminIds?: true
     lastMessageId?: true
     createdAt?: true
     updatedAt?: true
@@ -2651,6 +2668,9 @@ export namespace Prisma {
     id: string
     type: string
     participantIds: string[]
+    name: string | null
+    groupImage: string | null
+    adminIds: string[]
     lastMessageId: string | null
     createdAt: Date
     updatedAt: Date
@@ -2677,6 +2697,9 @@ export namespace Prisma {
     id?: boolean
     type?: boolean
     participantIds?: boolean
+    name?: boolean
+    groupImage?: boolean
+    adminIds?: boolean
     lastMessageId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -2688,6 +2711,9 @@ export namespace Prisma {
     id?: boolean
     type?: boolean
     participantIds?: boolean
+    name?: boolean
+    groupImage?: boolean
+    adminIds?: boolean
     lastMessageId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -3681,7 +3707,7 @@ export namespace Prisma {
     mediaUrls: string[]
     timestamp: Date
     status: string
-    receiverId: string
+    receiverId: string | null
     deletedFor: string[]
     deletedForAll: boolean
     reactions: JsonValue[]
@@ -6474,6 +6500,9 @@ export namespace Prisma {
     id: 'id',
     type: 'type',
     participantIds: 'participantIds',
+    name: 'name',
+    groupImage: 'groupImage',
+    adminIds: 'adminIds',
     lastMessageId: 'lastMessageId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -6624,6 +6653,9 @@ export namespace Prisma {
     id?: StringFilter | string
     type?: StringFilter | string
     participantIds?: StringNullableListFilter
+    name?: StringNullableFilter | string | null
+    groupImage?: StringNullableFilter | string | null
+    adminIds?: StringNullableListFilter
     lastMessageId?: StringNullableFilter | string | null
     createdAt?: DateTimeFilter | Date | string
     updatedAt?: DateTimeFilter | Date | string
@@ -6634,6 +6666,9 @@ export namespace Prisma {
     id?: SortOrder
     type?: SortOrder
     participantIds?: SortOrder
+    name?: SortOrder
+    groupImage?: SortOrder
+    adminIds?: SortOrder
     lastMessageId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -6648,6 +6683,9 @@ export namespace Prisma {
     id?: SortOrder
     type?: SortOrder
     participantIds?: SortOrder
+    name?: SortOrder
+    groupImage?: SortOrder
+    adminIds?: SortOrder
     lastMessageId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -6663,6 +6701,9 @@ export namespace Prisma {
     id?: StringWithAggregatesFilter | string
     type?: StringWithAggregatesFilter | string
     participantIds?: StringNullableListFilter
+    name?: StringNullableWithAggregatesFilter | string | null
+    groupImage?: StringNullableWithAggregatesFilter | string | null
+    adminIds?: StringNullableListFilter
     lastMessageId?: StringNullableWithAggregatesFilter | string | null
     createdAt?: DateTimeWithAggregatesFilter | Date | string
     updatedAt?: DateTimeWithAggregatesFilter | Date | string
@@ -6679,7 +6720,7 @@ export namespace Prisma {
     mediaUrls?: StringNullableListFilter
     timestamp?: DateTimeFilter | Date | string
     status?: StringFilter | string
-    receiverId?: StringFilter | string
+    receiverId?: StringNullableFilter | string | null
     deletedFor?: StringNullableListFilter
     deletedForAll?: BoolFilter | boolean
     reactions?: JsonNullableListFilter
@@ -6735,7 +6776,7 @@ export namespace Prisma {
     mediaUrls?: StringNullableListFilter
     timestamp?: DateTimeWithAggregatesFilter | Date | string
     status?: StringWithAggregatesFilter | string
-    receiverId?: StringWithAggregatesFilter | string
+    receiverId?: StringNullableWithAggregatesFilter | string | null
     deletedFor?: StringNullableListFilter
     deletedForAll?: BoolWithAggregatesFilter | boolean
     reactions?: JsonNullableListFilter
@@ -6941,6 +6982,9 @@ export namespace Prisma {
     id?: string
     type: string
     participantIds?: ConversationCreateparticipantIdsInput | Enumerable<string>
+    name?: string | null
+    groupImage?: string | null
+    adminIds?: ConversationCreateadminIdsInput | Enumerable<string>
     lastMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -6951,6 +6995,9 @@ export namespace Prisma {
     id?: string
     type: string
     participantIds?: ConversationCreateparticipantIdsInput | Enumerable<string>
+    name?: string | null
+    groupImage?: string | null
+    adminIds?: ConversationCreateadminIdsInput | Enumerable<string>
     lastMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -6960,6 +7007,9 @@ export namespace Prisma {
   export type ConversationUpdateInput = {
     type?: StringFieldUpdateOperationsInput | string
     participantIds?: ConversationUpdateparticipantIdsInput | Enumerable<string>
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    groupImage?: NullableStringFieldUpdateOperationsInput | string | null
+    adminIds?: ConversationUpdateadminIdsInput | Enumerable<string>
     lastMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6969,6 +7019,9 @@ export namespace Prisma {
   export type ConversationUncheckedUpdateInput = {
     type?: StringFieldUpdateOperationsInput | string
     participantIds?: ConversationUpdateparticipantIdsInput | Enumerable<string>
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    groupImage?: NullableStringFieldUpdateOperationsInput | string | null
+    adminIds?: ConversationUpdateadminIdsInput | Enumerable<string>
     lastMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6979,6 +7032,9 @@ export namespace Prisma {
     id?: string
     type: string
     participantIds?: ConversationCreateparticipantIdsInput | Enumerable<string>
+    name?: string | null
+    groupImage?: string | null
+    adminIds?: ConversationCreateadminIdsInput | Enumerable<string>
     lastMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -6987,6 +7043,9 @@ export namespace Prisma {
   export type ConversationUpdateManyMutationInput = {
     type?: StringFieldUpdateOperationsInput | string
     participantIds?: ConversationUpdateparticipantIdsInput | Enumerable<string>
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    groupImage?: NullableStringFieldUpdateOperationsInput | string | null
+    adminIds?: ConversationUpdateadminIdsInput | Enumerable<string>
     lastMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6995,6 +7054,9 @@ export namespace Prisma {
   export type ConversationUncheckedUpdateManyInput = {
     type?: StringFieldUpdateOperationsInput | string
     participantIds?: ConversationUpdateparticipantIdsInput | Enumerable<string>
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    groupImage?: NullableStringFieldUpdateOperationsInput | string | null
+    adminIds?: ConversationUpdateadminIdsInput | Enumerable<string>
     lastMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7006,7 +7068,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
-    receiverId: string
+    receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
@@ -7022,7 +7084,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
-    receiverId: string
+    receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
@@ -7033,7 +7095,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
@@ -7048,7 +7110,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
@@ -7062,7 +7124,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
-    receiverId: string
+    receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
@@ -7073,7 +7135,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
@@ -7086,7 +7148,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
@@ -7394,6 +7456,9 @@ export namespace Prisma {
     id?: SortOrder
     type?: SortOrder
     participantIds?: SortOrder
+    name?: SortOrder
+    groupImage?: SortOrder
+    adminIds?: SortOrder
     lastMessageId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -7402,6 +7467,8 @@ export namespace Prisma {
   export type ConversationMaxOrderByAggregateInput = {
     id?: SortOrder
     type?: SortOrder
+    name?: SortOrder
+    groupImage?: SortOrder
     lastMessageId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -7410,6 +7477,8 @@ export namespace Prisma {
   export type ConversationMinOrderByAggregateInput = {
     id?: SortOrder
     type?: SortOrder
+    name?: SortOrder
+    groupImage?: SortOrder
     lastMessageId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -7697,6 +7766,10 @@ export namespace Prisma {
     set: Enumerable<string>
   }
 
+  export type ConversationCreateadminIdsInput = {
+    set: Enumerable<string>
+  }
+
   export type MessageCreateNestedManyWithoutConversationInput = {
     create?: XOR<Enumerable<MessageCreateWithoutConversationInput>, Enumerable<MessageUncheckedCreateWithoutConversationInput>>
     connectOrCreate?: Enumerable<MessageCreateOrConnectWithoutConversationInput>
@@ -7712,6 +7785,11 @@ export namespace Prisma {
   }
 
   export type ConversationUpdateparticipantIdsInput = {
+    set?: Enumerable<string>
+    push?: string | Enumerable<string>
+  }
+
+  export type ConversationUpdateadminIdsInput = {
     set?: Enumerable<string>
     push?: string | Enumerable<string>
   }
@@ -7997,7 +8075,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
-    receiverId: string
+    receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
@@ -8011,7 +8089,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
-    receiverId: string
+    receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
@@ -8095,7 +8173,7 @@ export namespace Prisma {
     mediaUrls?: StringNullableListFilter
     timestamp?: DateTimeFilter | Date | string
     status?: StringFilter | string
-    receiverId?: StringFilter | string
+    receiverId?: StringNullableFilter | string | null
     deletedFor?: StringNullableListFilter
     deletedForAll?: BoolFilter | boolean
     reactions?: JsonNullableListFilter
@@ -8149,7 +8227,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
-    receiverId: string
+    receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
@@ -8163,7 +8241,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
-    receiverId: string
+    receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
@@ -8198,6 +8276,9 @@ export namespace Prisma {
     id?: string
     type: string
     participantIds?: ConversationCreateparticipantIdsInput | Enumerable<string>
+    name?: string | null
+    groupImage?: string | null
+    adminIds?: ConversationCreateadminIdsInput | Enumerable<string>
     lastMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -8207,6 +8288,9 @@ export namespace Prisma {
     id?: string
     type: string
     participantIds?: ConversationCreateparticipantIdsInput | Enumerable<string>
+    name?: string | null
+    groupImage?: string | null
+    adminIds?: ConversationCreateadminIdsInput | Enumerable<string>
     lastMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -8262,6 +8346,9 @@ export namespace Prisma {
   export type ConversationUpdateWithoutMessagesInput = {
     type?: StringFieldUpdateOperationsInput | string
     participantIds?: ConversationUpdateparticipantIdsInput | Enumerable<string>
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    groupImage?: NullableStringFieldUpdateOperationsInput | string | null
+    adminIds?: ConversationUpdateadminIdsInput | Enumerable<string>
     lastMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8270,6 +8357,9 @@ export namespace Prisma {
   export type ConversationUncheckedUpdateWithoutMessagesInput = {
     type?: StringFieldUpdateOperationsInput | string
     participantIds?: ConversationUpdateparticipantIdsInput | Enumerable<string>
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    groupImage?: NullableStringFieldUpdateOperationsInput | string | null
+    adminIds?: ConversationUpdateadminIdsInput | Enumerable<string>
     lastMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8461,7 +8551,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
-    receiverId: string
+    receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
@@ -8484,7 +8574,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
@@ -8497,7 +8587,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
@@ -8509,7 +8599,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
@@ -8552,7 +8642,7 @@ export namespace Prisma {
     mediaUrls?: MessageCreatemediaUrlsInput | Enumerable<string>
     timestamp?: Date | string
     status: string
-    receiverId: string
+    receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
@@ -8563,7 +8653,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
@@ -8576,7 +8666,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
@@ -8588,7 +8678,7 @@ export namespace Prisma {
     mediaUrls?: MessageUpdatemediaUrlsInput | Enumerable<string>
     timestamp?: DateTimeFieldUpdateOperationsInput | Date | string
     status?: StringFieldUpdateOperationsInput | string
-    receiverId?: StringFieldUpdateOperationsInput | string
+    receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>

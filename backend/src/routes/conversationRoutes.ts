@@ -1,16 +1,15 @@
 import express from "express";
 import { prisma } from "../config/db";
-import { getOrCreateConversation, getUserConversations } from "../controllers/conversationController";
+import {
+  getOrCreateConversation,
+  getUserConversations,
+  createGroupConversation,
+} from "../controllers/conversationController";
 
 const router = express.Router();
-
-// Get all conversations for a user
 router.get("/list/:userId", getUserConversations);
-
-// Get or create a conversation between two users
 router.get("/get-or-create", getOrCreateConversation);
-
-// Get messages for a conversation
+router.post("/group", createGroupConversation);
 router.get("/messages/:conversationId", async (req, res) => {
   const { conversationId } = req.params;
 
@@ -23,21 +22,18 @@ router.get("/messages/:conversationId", async (req, res) => {
       where: { conversationId },
       orderBy: { timestamp: "asc" },
     });
+
     res.json(messages);
   } catch (err) {
     console.error("Failed to fetch messages:", err);
     res.status(500).json({ message: "Failed to fetch messages" });
   }
 });
-
-// Send a new message
 router.post("/messages", async (req, res) => {
   const { conversationId, senderId, receiverId, content, mediaUrls } = req.body;
-
-  // Validate request body
-  if (!conversationId || !senderId || !receiverId || !content) {
+  if (!conversationId || !senderId || !content) {
     return res.status(400).json({
-      message: "conversationId, senderId, receiverId, and content are required",
+      message: "conversationId, senderId, and content are required",
     });
   }
 
@@ -46,10 +42,10 @@ router.post("/messages", async (req, res) => {
       data: {
         conversationId,
         senderId,
-        receiverId,
+        receiverId: receiverId || null, 
         content,
         status: "sent",
-        mediaUrls: mediaUrls || [], // optional array of media URLs
+        mediaUrls: mediaUrls || [],
         timestamp: new Date(),
       },
     });
