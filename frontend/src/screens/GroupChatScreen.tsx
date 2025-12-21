@@ -30,7 +30,6 @@ export type FileMessageContent = {
   url: string;
   name?: string;
 };
-
 type MessageContent = string | FileMessageContent;
 
 interface GroupChatScreenProps {
@@ -81,7 +80,7 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
 
   const handleSend = () => {
     if (!text.trim()) return;
-    sendMessage("", text.trim()); // group message
+    sendMessage("", text.trim()); 
     setText("");
   };
 
