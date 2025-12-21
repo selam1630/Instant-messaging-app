@@ -145,9 +145,17 @@ export default function ChatListScreen({ route }: any) {
       {/* Header with Logout */}
       <View style={styles.headerWrapper}>
         <Text style={styles.header}>Chats</Text>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={styles.createGroupButton}
+            onPress={() => navigation.navigate('GroupChat', { conversationId: '', userId, groupName: 'New Group', participantIds: [userId] })}
+          >
+            <Text style={styles.createGroupText}>Create Group</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Add Contact Input */}
@@ -194,6 +202,9 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
   },
+  headerActions: { flexDirection: 'row', alignItems: 'center' },
+  createGroupButton: { backgroundColor: '#fff', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginRight: 8 },
+  createGroupText: { color: '#7b2cbf', fontWeight: 'bold' },
   logoutButton: {
     backgroundColor: "#fff",
     paddingHorizontal: 14,

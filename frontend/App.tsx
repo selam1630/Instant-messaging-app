@@ -8,6 +8,7 @@ import SignUpScreen from "./src/components/authpages/signup";
 import VerifyEmailScreen from "./src/components/authpages/VerifyEmailScreen";
 import ChatScreen from "./src/screens/ChatScreen"; 
 import ChatListScreen from "./src/screens/ChatListScreen";
+import GroupChatScreen from "./src/screens/GroupChatScreen";
 import { SocketProvider } from "./src/context/SocketContext";
 
 export type RootStackParamList = {
@@ -17,6 +18,7 @@ export type RootStackParamList = {
   VerifyEmail: { email: string; name: string; password: string ;phoneNumber: string };
   ChatList: { userId: string };
   Chat: { conversationId: string; userId: string; receiverId: string };
+  GroupChat: { conversationId: string; userId: string; groupName: string; participantIds: string[] };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -31,6 +33,7 @@ const App: React.FC = () => {
           <Stack.Screen name="SignUp" component={SignUpScreen} />
           <Stack.Screen name="VerifyEmail" component={VerifyEmailScreen} />
           <Stack.Screen name="Chat" component={ChatScreen} />
+          <Stack.Screen name="GroupChat" component={GroupChatScreen} />
           <Stack.Screen name="ChatList" component={ChatListScreen} />
         </Stack.Navigator>
       </NavigationContainer>
