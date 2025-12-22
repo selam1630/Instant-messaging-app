@@ -129,7 +129,6 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
       }
     }
   };
-
   const pickAndSendFile = async () => {
     try {
       const res = await DocumentPicker.pick({ multiple: false, type: ["*/*"] });
@@ -196,13 +195,26 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
   };
 
   const sendAudioFile = async (filePath: string) => {
-    const fileName = filePath.split("/").pop();
-    const formData = new FormData();
-    formData.append("file", { uri: filePath, type: "audio/mpeg", name: fileName } as any);
-    const uploadRes = await fetch(`${BACKEND_URL}/api/files/upload`, { method: "POST", body: formData });
-    if (!uploadRes.ok) return;
-    const data = await uploadRes.json();
-    sendMessage("", { type: "audio", url: data.fileUrl, name: data.originalName });
+    try {
+      const fileName = filePath.split("/").pop();
+      const formData = new FormData();
+      const uri = Platform.OS === "android" ? (filePath.startsWith("file://") ? filePath : "file://" + filePath) : filePath;
+      formData.append("file", { uri, type: "audio/mpeg", name: fileName } as any);
+
+      const uploadRes = await fetch(`${BACKEND_URL}/api/files/upload`, { method: "POST", body: formData });
+      if (!uploadRes.ok) {
+        const txt = await uploadRes.text().catch(() => "");
+        console.error("Upload failed:", txt);
+        Alert.alert("Upload Failed", "Could not upload audio file.");
+        return;
+      }
+
+      const data = await uploadRes.json();
+      sendMessage("", { type: "audio", url: data.fileUrl, name: data.originalName });
+    } catch (err) {
+      console.error("Audio send error:", err);
+      Alert.alert("Error", "Failed to send audio message. Check your network or file permissions.");
+    }
   };
 
   const renderMessage = ({ item }: { item: Message }) => {
