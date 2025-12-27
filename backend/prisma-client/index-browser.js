@@ -135,6 +135,8 @@ exports.Prisma.MessageScalarFieldEnum = {
   receiverId: 'receiverId',
   deletedFor: 'deletedFor',
   deletedForAll: 'deletedForAll',
+  replyToId: 'replyToId',
+  forwardedFrom: 'forwardedFrom',
   reactions: 'reactions'
 };
 

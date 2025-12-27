@@ -30,7 +30,16 @@ router.get("/messages/:conversationId", async (req, res) => {
   }
 });
 router.post("/messages", async (req, res) => {
-  const { conversationId, senderId, receiverId, content, mediaUrls } = req.body;
+  const {
+    conversationId,
+    senderId,
+    receiverId,
+    content,
+    mediaUrls,
+    replyToId,
+    forwardedFrom,
+  } = req.body;
+
   if (!conversationId || !senderId || !content) {
     return res.status(400).json({
       message: "conversationId, senderId, and content are required",
@@ -42,11 +51,13 @@ router.post("/messages", async (req, res) => {
       data: {
         conversationId,
         senderId,
-        receiverId: receiverId || null, 
+        receiverId: receiverId || null,
         content,
         status: "sent",
         mediaUrls: mediaUrls || [],
         timestamp: new Date(),
+        replyToId: replyToId || null,
+        forwardedFrom: forwardedFrom || null,
       },
     });
 

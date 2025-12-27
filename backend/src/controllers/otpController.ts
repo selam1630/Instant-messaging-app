@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
 import { prisma } from "../config/db";
 import { sendOTPEmail } from "../utils/mailer";
-
-// Generate a 6-digit numeric OTP
 const generateNumericOTP = (length: number) => {
   let otp = "";
   for (let i = 0; i < length; i++) {
@@ -17,36 +15,29 @@ export const sendOTP = async (req: Request, res: Response) => {
   if (!phoneNumber) return res.status(400).json({ message: "Phone number is required" });
 
   try {
-    // 1️⃣ Delete any expired OTPs for this email
     await prisma.oTP.deleteMany({
       where: {
         email,
         OR: [{ expiresAt: { lt: new Date() } }],
       },
     });
-
-    // 2️⃣ Create pending user if doesn't exist
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (!existingUser) {
       await prisma.user.create({
         data: {
           email,
           name: name || null,
-          phoneNumber,   // ✅ save phone number here
+          phoneNumber,  
           isVerified: false,
         },
       });
     }
-
-    // 3️⃣ Generate OTP
     const otp = generateNumericOTP(6);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
     await prisma.oTP.create({
       data: { email, code: otp, expiresAt },
     });
-
-    // 4️⃣ Send OTP via email
     await sendOTPEmail(email, otp);
 
     res.status(200).json({ message: "OTP sent successfully" });

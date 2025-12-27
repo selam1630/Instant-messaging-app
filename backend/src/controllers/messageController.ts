@@ -1,16 +1,13 @@
 import { prisma } from "../config/db";
 import { Request, Response } from "express";
+import { getIO } from "../utils/socketManager";
 
 export const deleteMessage = async (req: Request, res: Response) => {
   try {
     const { messageId, userId, deleteForEveryone } = req.body;
-
-    // Validate input
     if (!messageId || !userId) {
       return res.status(400).json({ error: "Missing required fields" });
     }
-
-    // Fetch the message by ID
     const message = await prisma.message.findUnique({
       where: { id: messageId },
     });
@@ -18,18 +15,20 @@ export const deleteMessage = async (req: Request, res: Response) => {
     if (!message) {
       return res.status(404).json({ error: "Message not found" });
     }
-
-    // Delete for everyone or just for the current user
     if (deleteForEveryone) {
       await prisma.message.update({
         where: { id: messageId },
         data: { deletedForAll: true },
       });
+      const io = getIO();
+      io?.emit("message_deleted", messageId);
     } else {
       await prisma.message.update({
         where: { id: messageId },
-        data: { deletedFor: { push: userId } }, // push userId to deletedFor array
+        data: { deletedFor: { push: userId } }, 
       });
+      const io = getIO();
+      io?.emit("message_deleted", messageId);
     }
 
     res.json({ success: true, messageId, deleteForEveryone: !!deleteForEveryone });

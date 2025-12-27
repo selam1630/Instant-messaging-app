@@ -2,9 +2,6 @@ import { Request, Response } from "express";
 import { prisma } from "../config/db";
 import { emitToUser } from "../utils/socketManager";
 
-/**
- * Create or get an existing private conversation between two users
- */
 export const getOrCreateConversation = async (req: Request, res: Response) => {
   try {
     const { user1, user2 } = req.query;
@@ -15,8 +12,6 @@ export const getOrCreateConversation = async (req: Request, res: Response) => {
 
     const userA = String(user1);
     const userB = String(user2);
-
-    // Check if conversation already exists
     const existingConversation = await prisma.conversation.findFirst({
       where: {
         type: "private",
@@ -30,8 +25,6 @@ export const getOrCreateConversation = async (req: Request, res: Response) => {
         message: "Existing conversation found",
       });
     }
-
-    // Create new conversation
     const newConversation = await prisma.conversation.create({
       data: {
         type: "private",
@@ -53,8 +46,6 @@ export const getOrCreateConversation = async (req: Request, res: Response) => {
 export const getUserConversations = async (req: Request, res: Response) => {
   try {
     const userId = String(req.params.userId);
-
-    // 1. Fetch conversations where the user participates
     const conversations = await prisma.conversation.findMany({
       where: { participantIds: { has: userId } },
       include: { messages: { orderBy: { timestamp: "desc" }, take: 1 } },
@@ -97,8 +88,6 @@ export const getUserConversations = async (req: Request, res: Response) => {
         isGroup: false,
       };
     });
-
-    // 5. Include conversations with participants not in contacts
     const remainingConvs = convUsers
       .filter((u) => {
         if (u.isGroup) return true;
@@ -124,8 +113,6 @@ export const getUserConversations = async (req: Request, res: Response) => {
           isGroup: false,
         };
       });
-
-    // 6. Combine both
     const finalList = [...merged, ...remainingConvs];
 
     res.json({ conversations: finalList });
@@ -152,8 +139,6 @@ export const createGroupConversation = async (req: Request, res: Response) => {
         groupImage,
       },
     });
-
-    // notify participants via socket that a new group was created
     const payload = {
       conversationId: conversation.id,
       name: conversation.name,

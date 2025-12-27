@@ -54,7 +54,10 @@ model Message {
 
   deletedFor     String[]      @default([]) 
   deletedForAll  Boolean       @default(false)
-
+  
+  replyToId      String?  @db.ObjectId
+  forwardedFrom  String?  @db.ObjectId
+  
   reactions      Json[]        @default([])
   
   conversation  Conversation   @relation(fields: [conversationId], references: [id], name: "ConversationMessages")

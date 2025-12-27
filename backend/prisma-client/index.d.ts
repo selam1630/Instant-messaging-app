@@ -84,6 +84,8 @@ export type MessagePayload<ExtArgs extends $Extensions.Args = $Extensions.Defaul
     receiverId: string | null
     deletedFor: string[]
     deletedForAll: boolean
+    replyToId: string | null
+    forwardedFrom: string | null
     reactions: Prisma.JsonValue[]
   }, ExtArgs["result"]["message"]>
   composites: {}
@@ -3563,6 +3565,8 @@ export namespace Prisma {
     status: string | null
     receiverId: string | null
     deletedForAll: boolean | null
+    replyToId: string | null
+    forwardedFrom: string | null
   }
 
   export type MessageMaxAggregateOutputType = {
@@ -3573,6 +3577,8 @@ export namespace Prisma {
     status: string | null
     receiverId: string | null
     deletedForAll: boolean | null
+    replyToId: string | null
+    forwardedFrom: string | null
   }
 
   export type MessageCountAggregateOutputType = {
@@ -3586,6 +3592,8 @@ export namespace Prisma {
     receiverId: number
     deletedFor: number
     deletedForAll: number
+    replyToId: number
+    forwardedFrom: number
     reactions: number
     _all: number
   }
@@ -3599,6 +3607,8 @@ export namespace Prisma {
     status?: true
     receiverId?: true
     deletedForAll?: true
+    replyToId?: true
+    forwardedFrom?: true
   }
 
   export type MessageMaxAggregateInputType = {
@@ -3609,6 +3619,8 @@ export namespace Prisma {
     status?: true
     receiverId?: true
     deletedForAll?: true
+    replyToId?: true
+    forwardedFrom?: true
   }
 
   export type MessageCountAggregateInputType = {
@@ -3622,6 +3634,8 @@ export namespace Prisma {
     receiverId?: true
     deletedFor?: true
     deletedForAll?: true
+    replyToId?: true
+    forwardedFrom?: true
     reactions?: true
     _all?: true
   }
@@ -3710,6 +3724,8 @@ export namespace Prisma {
     receiverId: string | null
     deletedFor: string[]
     deletedForAll: boolean
+    replyToId: string | null
+    forwardedFrom: string | null
     reactions: JsonValue[]
     _count: MessageCountAggregateOutputType | null
     _min: MessageMinAggregateOutputType | null
@@ -3741,6 +3757,8 @@ export namespace Prisma {
     receiverId?: boolean
     deletedFor?: boolean
     deletedForAll?: boolean
+    replyToId?: boolean
+    forwardedFrom?: boolean
     reactions?: boolean
     conversation?: boolean | ConversationArgs<ExtArgs>
     sender?: boolean | UserArgs<ExtArgs>
@@ -3757,6 +3775,8 @@ export namespace Prisma {
     receiverId?: boolean
     deletedFor?: boolean
     deletedForAll?: boolean
+    replyToId?: boolean
+    forwardedFrom?: boolean
     reactions?: boolean
   }
 
@@ -6522,6 +6542,8 @@ export namespace Prisma {
     receiverId: 'receiverId',
     deletedFor: 'deletedFor',
     deletedForAll: 'deletedForAll',
+    replyToId: 'replyToId',
+    forwardedFrom: 'forwardedFrom',
     reactions: 'reactions'
   };
 
@@ -6723,6 +6745,8 @@ export namespace Prisma {
     receiverId?: StringNullableFilter | string | null
     deletedFor?: StringNullableListFilter
     deletedForAll?: BoolFilter | boolean
+    replyToId?: StringNullableFilter | string | null
+    forwardedFrom?: StringNullableFilter | string | null
     reactions?: JsonNullableListFilter
     conversation?: XOR<ConversationRelationFilter, ConversationWhereInput>
     sender?: XOR<UserRelationFilter, UserWhereInput>
@@ -6739,6 +6763,8 @@ export namespace Prisma {
     receiverId?: SortOrder
     deletedFor?: SortOrder
     deletedForAll?: SortOrder
+    replyToId?: SortOrder
+    forwardedFrom?: SortOrder
     reactions?: SortOrder
     conversation?: ConversationOrderByWithRelationInput
     sender?: UserOrderByWithRelationInput
@@ -6759,6 +6785,8 @@ export namespace Prisma {
     receiverId?: SortOrder
     deletedFor?: SortOrder
     deletedForAll?: SortOrder
+    replyToId?: SortOrder
+    forwardedFrom?: SortOrder
     reactions?: SortOrder
     _count?: MessageCountOrderByAggregateInput
     _max?: MessageMaxOrderByAggregateInput
@@ -6779,6 +6807,8 @@ export namespace Prisma {
     receiverId?: StringNullableWithAggregatesFilter | string | null
     deletedFor?: StringNullableListFilter
     deletedForAll?: BoolWithAggregatesFilter | boolean
+    replyToId?: StringNullableWithAggregatesFilter | string | null
+    forwardedFrom?: StringNullableWithAggregatesFilter | string | null
     reactions?: JsonNullableListFilter
   }
 
@@ -7071,6 +7101,8 @@ export namespace Prisma {
     receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    replyToId?: string | null
+    forwardedFrom?: string | null
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
     conversation: ConversationCreateNestedOneWithoutMessagesInput
     sender: UserCreateNestedOneWithoutMessagesSentInput
@@ -7087,6 +7119,8 @@ export namespace Prisma {
     receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    replyToId?: string | null
+    forwardedFrom?: string | null
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
   }
 
@@ -7098,6 +7132,8 @@ export namespace Prisma {
     receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    forwardedFrom?: NullableStringFieldUpdateOperationsInput | string | null
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
     sender?: UserUpdateOneRequiredWithoutMessagesSentNestedInput
@@ -7113,6 +7149,8 @@ export namespace Prisma {
     receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    forwardedFrom?: NullableStringFieldUpdateOperationsInput | string | null
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
   }
 
@@ -7127,6 +7165,8 @@ export namespace Prisma {
     receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    replyToId?: string | null
+    forwardedFrom?: string | null
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
   }
 
@@ -7138,6 +7178,8 @@ export namespace Prisma {
     receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    forwardedFrom?: NullableStringFieldUpdateOperationsInput | string | null
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
   }
 
@@ -7151,6 +7193,8 @@ export namespace Prisma {
     receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    forwardedFrom?: NullableStringFieldUpdateOperationsInput | string | null
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
   }
 
@@ -7531,6 +7575,8 @@ export namespace Prisma {
     receiverId?: SortOrder
     deletedFor?: SortOrder
     deletedForAll?: SortOrder
+    replyToId?: SortOrder
+    forwardedFrom?: SortOrder
     reactions?: SortOrder
   }
 
@@ -7542,6 +7588,8 @@ export namespace Prisma {
     status?: SortOrder
     receiverId?: SortOrder
     deletedForAll?: SortOrder
+    replyToId?: SortOrder
+    forwardedFrom?: SortOrder
   }
 
   export type MessageMinOrderByAggregateInput = {
@@ -7552,6 +7600,8 @@ export namespace Prisma {
     status?: SortOrder
     receiverId?: SortOrder
     deletedForAll?: SortOrder
+    replyToId?: SortOrder
+    forwardedFrom?: SortOrder
   }
   export type JsonNullableWithAggregatesFilter = 
     | PatchUndefined<
@@ -8078,6 +8128,8 @@ export namespace Prisma {
     receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    replyToId?: string | null
+    forwardedFrom?: string | null
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
     conversation: ConversationCreateNestedOneWithoutMessagesInput
   }
@@ -8092,6 +8144,8 @@ export namespace Prisma {
     receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    replyToId?: string | null
+    forwardedFrom?: string | null
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
   }
 
@@ -8176,6 +8230,8 @@ export namespace Prisma {
     receiverId?: StringNullableFilter | string | null
     deletedFor?: StringNullableListFilter
     deletedForAll?: BoolFilter | boolean
+    replyToId?: StringNullableFilter | string | null
+    forwardedFrom?: StringNullableFilter | string | null
     reactions?: JsonNullableListFilter
   }
 
@@ -8230,6 +8286,8 @@ export namespace Prisma {
     receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    replyToId?: string | null
+    forwardedFrom?: string | null
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
     sender: UserCreateNestedOneWithoutMessagesSentInput
   }
@@ -8244,6 +8302,8 @@ export namespace Prisma {
     receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    replyToId?: string | null
+    forwardedFrom?: string | null
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
   }
 
@@ -8554,6 +8614,8 @@ export namespace Prisma {
     receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    replyToId?: string | null
+    forwardedFrom?: string | null
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
   }
 
@@ -8577,6 +8639,8 @@ export namespace Prisma {
     receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    forwardedFrom?: NullableStringFieldUpdateOperationsInput | string | null
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
     conversation?: ConversationUpdateOneRequiredWithoutMessagesNestedInput
   }
@@ -8590,6 +8654,8 @@ export namespace Prisma {
     receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    forwardedFrom?: NullableStringFieldUpdateOperationsInput | string | null
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
   }
 
@@ -8602,6 +8668,8 @@ export namespace Prisma {
     receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    forwardedFrom?: NullableStringFieldUpdateOperationsInput | string | null
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
   }
 
@@ -8645,6 +8713,8 @@ export namespace Prisma {
     receiverId?: string | null
     deletedFor?: MessageCreatedeletedForInput | Enumerable<string>
     deletedForAll?: boolean
+    replyToId?: string | null
+    forwardedFrom?: string | null
     reactions?: MessageCreatereactionsInput | Enumerable<InputJsonValue>
   }
 
@@ -8656,6 +8726,8 @@ export namespace Prisma {
     receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    forwardedFrom?: NullableStringFieldUpdateOperationsInput | string | null
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
     sender?: UserUpdateOneRequiredWithoutMessagesSentNestedInput
   }
@@ -8669,6 +8741,8 @@ export namespace Prisma {
     receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    forwardedFrom?: NullableStringFieldUpdateOperationsInput | string | null
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
   }
 
@@ -8681,6 +8755,8 @@ export namespace Prisma {
     receiverId?: NullableStringFieldUpdateOperationsInput | string | null
     deletedFor?: MessageUpdatedeletedForInput | Enumerable<string>
     deletedForAll?: BoolFieldUpdateOperationsInput | boolean
+    replyToId?: NullableStringFieldUpdateOperationsInput | string | null
+    forwardedFrom?: NullableStringFieldUpdateOperationsInput | string | null
     reactions?: MessageUpdatereactionsInput | Enumerable<InputJsonValue>
   }
 

@@ -30,17 +30,14 @@ export interface Message {
   deletedForAll?: boolean;
   deletedFor?: string[];
 
-  // ✅ NEW: Emoji reactions
   reactions?: {
     emoji: string;
     userId: string;
     createdAt?: string;
   }[];
+  replyToId?: string | null;
+  forwardedFrom?: string | null;
 }
-
-/* ============================
-   CHAT HOOK
-============================ */
 
 export function useChat(conversationId: string, userId: string) {
   const { socket } = useSocket();
@@ -99,10 +96,6 @@ export function useChat(conversationId: string, userId: string) {
     fetchMessages();
   }, [conversationId, userId]);
 
-  /* ============================
-     RECEIVE MESSAGE (SOCKET)
-  ============================ */
-
   useEffect(() => {
     if (!socket) return;
 
@@ -137,10 +130,6 @@ export function useChat(conversationId: string, userId: string) {
       socket.off("receive_message", handleReceiveMessage);
     };
   }, [socket, conversationId, userId]);
-
-  /* ============================
-     READ RECEIPTS
-  ============================ */
 
   useEffect(() => {
     if (!socket) return;
@@ -220,7 +209,8 @@ export function useChat(conversationId: string, userId: string) {
 
   const sendMessage = async (
     receiverId: string,
-    content: MessageContent
+    content: MessageContent,
+    options?: { replyToId?: string | null; forwardedFrom?: string | null }
   ) => {
     const tempId = uuidv4();
 
@@ -232,6 +222,8 @@ export function useChat(conversationId: string, userId: string) {
       content,
       status: "sent",
       timestamp: new Date().toISOString(),
+      replyToId: options?.replyToId || null,
+      forwardedFrom: options?.forwardedFrom || null,
     };
 
     setMessages((prev) => [...prev, tempMessage]);
@@ -241,7 +233,11 @@ export function useChat(conversationId: string, userId: string) {
       const res = await fetch(`${BACKEND_URL}/api/conversation/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(tempMessage),
+        body: JSON.stringify({
+          ...tempMessage,
+          replyToId: tempMessage.replyToId,
+          forwardedFrom: tempMessage.forwardedFrom,
+        }),
       });
 
       if (!res.ok) throw new Error("Failed to save message");

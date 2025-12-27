@@ -51,11 +51,15 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
   const [text, setText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [forwardedFrom, setForwardedFrom] = useState<string | null>(null);
   const [audioPath, setAudioPath] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
   const actionSheetRef = useRef<ActionSheet>(null);
+  const messageActionSheetRef = useRef<ActionSheet>(null);
+  const [messageActionOptions, setMessageActionOptions] = useState<string[]>([]);
+  const [messageActionCancelIndex, setMessageActionCancelIndex] = useState<number>(0);
 
   const getMessageTypeFromMime = (mime: string): FileMessageContent["type"] => {
     if (mime.startsWith("image/")) return "image";
@@ -80,8 +84,10 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
 
   const handleSend = () => {
     if (!text.trim()) return;
-    sendMessage("", text.trim()); 
+    sendMessage("", text.trim(), { replyToId: selectedMessage?.id || null, forwardedFrom: forwardedFrom || null });
     setText("");
+    setSelectedMessage(null);
+    setForwardedFrom(null);
   };
 
   const uploadFileToServer = async (fileUri: string, fileName: string, fileType: string) => {
@@ -157,16 +163,19 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
 
   const handleLongPress = (item: Message) => {
     const isSentByMe = item.senderId === userId;
-    Alert.alert(
-      "Message Options",
-      "Choose an action",
-      [
-        { text: "React ❤️", onPress: () => { setSelectedMessage(item); setShowEmojiPicker(true); } },
-        { text: "Delete for me", onPress: () => deleteMessage(item.id!, false) },
-        isSentByMe && { text: "Delete for everyone", onPress: () => deleteMessage(item.id!, true), style: "destructive" },
-        { text: "Cancel", style: "cancel" },
-      ].filter(Boolean) as any
-    );
+    setSelectedMessage(item);
+
+    const options: string[] = [];
+    options.push("React ❤️");
+    options.push("Reply");
+    options.push("Forward");
+    options.push("Delete for me");
+    if (isSentByMe) options.push("Delete for everyone");
+    options.push("Cancel");
+
+    setMessageActionOptions(options);
+    setMessageActionCancelIndex(options.length - 1);
+    setTimeout(() => messageActionSheetRef.current?.show(), 50);
   };
 
   const startRecording = async () => {
@@ -266,6 +275,13 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
         />
 
         <View style={styles.inputWrapper}>
+          {selectedMessage && (
+            <View style={styles.replyPreview}>
+              <Text style={styles.replyLabel}>Replying to:</Text>
+              <Text numberOfLines={1} style={styles.replyText}>{typeof selectedMessage.content === 'string' ? selectedMessage.content : (selectedMessage.content as any).name || 'Attachment'}</Text>
+              <TouchableOpacity onPress={() => setSelectedMessage(null)}><Text style={styles.replyCancel}>✖</Text></TouchableOpacity>
+            </View>
+          )}
           <TouchableOpacity onPress={handleAttachmentPress}><Text style={styles.attachButton}>📎</Text></TouchableOpacity>
           <TextInput style={styles.input} value={text} onChangeText={setText} placeholder="Type a message..." placeholderTextColor="rgba(255,255,255,0.6)" />
           <TouchableOpacity style={styles.sendButton} onPress={handleSend}><Text style={styles.sendButtonText}>Send</Text></TouchableOpacity>
@@ -291,6 +307,28 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
             if (index === 1) handleCamera("video");
             if (index === 2) handleMediaSelection("library");
             if (index === 3) pickAndSendFile();
+          }}
+        />
+
+        <ActionSheet
+          ref={messageActionSheetRef}
+          options={messageActionOptions}
+          cancelButtonIndex={messageActionCancelIndex}
+          onPress={(index) => {
+            const option = messageActionOptions[index];
+            if (!option || !selectedMessage) return;
+            if (option === "React ❤️") {
+              setShowEmojiPicker(true);
+            } else if (option === "Reply") {
+              // keep selectedMessage
+            } else if (option === "Forward") {
+              setForwardedFrom(selectedMessage.id!);
+              setText(typeof selectedMessage.content === 'string' ? selectedMessage.content : (selectedMessage.content as any).name || '');
+            } else if (option === "Delete for me") {
+              deleteMessage(selectedMessage.id!, false);
+            } else if (option === "Delete for everyone") {
+              deleteMessage(selectedMessage.id!, true);
+            }
           }}
         />
 
@@ -334,4 +372,8 @@ const styles = StyleSheet.create({
   sendButton: { backgroundColor: "#fff", borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10 },
   sendButtonText: { color: "#7b2cbf", fontWeight: "bold" },
   noMessages: { textAlign: "center", color: "rgba(255,255,255,0.6)", fontSize: 16 },
+  replyPreview: { backgroundColor: 'rgba(255,255,255,0.08)', padding: 8, borderRadius: 10, marginHorizontal: 8, marginBottom: 6, flexDirection: 'row', alignItems: 'center' },
+  replyLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 12, marginRight: 8 },
+  replyText: { color: '#fff', flex: 1 },
+  replyCancel: { color: 'rgba(255,255,255,0.6)', marginLeft: 8 },
 });
