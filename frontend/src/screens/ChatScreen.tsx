@@ -70,7 +70,10 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
   const [text, setText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+const [actionMessage, setActionMessage] = useState<Message | null>(null);
+const [replyMessage, setReplyMessage] = useState<Message | null>(null);
+const [reactionMessage, setReactionMessage] = useState<Message | null>(null);
+
 const [forwardedFrom, setForwardedFrom] = useState<string | null>(null);
 const [audioPath, setAudioPath] = useState<string | null>(null);
 const [isRecording, setIsRecording] = useState(false);
@@ -96,12 +99,11 @@ const [isRecording, setIsRecording] = useState(false);
       wavFile: 'voiceMessage.wav',
     });
   }, []);
-
   const handleSend = () => {
     if (!text.trim()) return;
-    sendMessage(receiverId, text.trim(), { replyToId: selectedMessage?.id || null, forwardedFrom: forwardedFrom || null });
+    sendMessage(receiverId, text.trim(), { replyToId: replyMessage?.id || null, forwardedFrom: forwardedFrom || null });
     setText("");
-    setSelectedMessage(null);
+    setReplyMessage(null);
     setForwardedFrom(null);
   };
 
@@ -199,8 +201,11 @@ const [isRecording, setIsRecording] = useState(false);
   };
 const handleLongPress = (item: Message) => {
   if (!item.id) return;
+
   const isSentByMe = item.senderId === userId;
-  setSelectedMessage(item);
+
+  // ONLY set action message
+  setActionMessage(item);
 
   const options: string[] = [];
   options.push("React ❤️");
@@ -212,9 +217,10 @@ const handleLongPress = (item: Message) => {
 
   setMessageActionOptions(options);
   setMessageActionCancelIndex(options.length - 1);
-  // show action sheet
+
   setTimeout(() => messageActionSheetRef.current?.show(), 50);
 };
+
 const startRecording = async () => {
   const hasPermission = await requestAudioPermission();
   if (!hasPermission) {
@@ -405,13 +411,27 @@ const stopRecording = async () => {
           }}
           ListEmptyComponent={<Text style={styles.noMessages}>No messages yet. Start chatting!</Text>}
         />
-
+{showEmojiPicker && reactionMessage && (
+  <View style={styles.emojiPicker}>
+    <EmojiSelector
+      category={Categories.all}
+      onEmojiSelected={(emoji) => {
+        reactToMessage(reactionMessage.id!, emoji);
+        setShowEmojiPicker(false);
+        setReactionMessage(null);
+      }}
+      showSearchBar={false}
+      showTabs
+      showHistory
+    />
+  </View>
+)}
         <View style={styles.inputWrapper}>
-          {selectedMessage && (
+          {replyMessage && (
             <View style={styles.replyPreview}>
               <Text style={styles.replyLabel}>Replying to:</Text>
-              <Text numberOfLines={1} style={styles.replyText}>{typeof selectedMessage.content === 'string' ? selectedMessage.content : (selectedMessage.content as any).name || 'Attachment'}</Text>
-              <TouchableOpacity onPress={() => setSelectedMessage(null)}><Text style={styles.replyCancel}>✖</Text></TouchableOpacity>
+              <Text numberOfLines={1} style={styles.replyText}>{typeof replyMessage.content === 'string' ? replyMessage.content : (replyMessage.content as any).name || 'Attachment'}</Text>
+              <TouchableOpacity onPress={() => setReplyMessage(null)}><Text style={styles.replyCancel}>✖</Text></TouchableOpacity>
             </View>
           )}
           <TouchableOpacity onPress={handleAttachmentPress}>
@@ -469,64 +489,54 @@ const stopRecording = async () => {
             if (index === 3) pickAndSendFile();
           }}
         />
-        <ActionSheet
-          ref={messageActionSheetRef}
-          options={messageActionOptions}
-          cancelButtonIndex={messageActionCancelIndex}
-          onPress={(index) => {
-            const option = messageActionOptions[index];
-            if (!option || !selectedMessage) return;
-            if (option === "React ❤️") {
-              setShowEmojiPicker(true);
-            } else if (option === "Reply") {
-  setTimeout(() => {
-    inputRef.current?.focus(); 
-  }, 100);
-            } 
-            else if (option === "Forward") {
-  if (!selectedMessage) return;
+       <ActionSheet
+  ref={messageActionSheetRef}
+  options={messageActionOptions}
+  cancelButtonIndex={messageActionCancelIndex}
+  onPress={(index) => {
+    const option = messageActionOptions[index];
+    if (!option || !actionMessage) return;
 
- navigation.navigate("ChatList", {
-  userId,
-  forwardMessage: selectedMessage,
-  onForward: (convOrReceiverId: string, isGroup?: boolean) => {
-    // If forwarding to a group, use conversationId
-    sendMessage(
-      isGroup ? convOrReceiverId : convOrReceiverId,
-      typeof selectedMessage.content === "string"
-        ? selectedMessage.content
-        : (selectedMessage.content as any).name || "",
-      { forwardedFrom: selectedMessage.id }
-    );
-    setSelectedMessage(null);
-    setText("");
-  },
-});
+    if (option === "React ❤️") {
+      setReactionMessage(actionMessage);
+      setShowEmojiPicker(true);
+    }
 
+    else if (option === "Reply") {
+      setReplyMessage(actionMessage);
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
 
-} else if (option === "Delete for me") {
-              deleteMessage(selectedMessage.id!, false);
-            } else if (option === "Delete for everyone") {
-              deleteMessage(selectedMessage.id!, true);
-            }
-          }}
-        />
-        {showEmojiPicker && selectedMessage && (
-  <View style={styles.emojiPicker}>
-    <EmojiSelector
-      category={Categories.all}
-      onEmojiSelected={(emoji) => {
-        reactToMessage(selectedMessage.id!, emoji);
-        setShowEmojiPicker(false);
-        setSelectedMessage(null);
-      }}
-      showSearchBar={false}
-      showTabs
-      showHistory
-    />
-  </View>
-)}
-        
+    else if (option === "Forward") {
+      navigation.navigate("ChatList", {
+        userId,
+        forwardMessage: actionMessage,
+        onForward: (convOrReceiverId: string, isGroup?: boolean) => {
+          sendMessage(
+            convOrReceiverId,
+            typeof actionMessage.content === "string"
+              ? actionMessage.content
+              : (actionMessage.content as any).name || "",
+            { forwardedFrom: actionMessage.id }
+          );
+          setText("");
+        },
+      });
+    }
+
+    else if (option === "Delete for me") {
+      deleteMessage(actionMessage.id!, false);
+    }
+
+    else if (option === "Delete for everyone") {
+      deleteMessage(actionMessage.id!, true);
+    }
+
+    setActionMessage(null); // cleanup
+  }}
+/>
       </View>
     </KeyboardAvoidingView>
   );

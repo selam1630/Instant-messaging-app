@@ -50,7 +50,9 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
 
   const [text, setText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [actionMessage, setActionMessage] = useState<Message | null>(null);
+const [replyMessage, setReplyMessage] = useState<Message | null>(null);
+
   const [forwardedFrom, setForwardedFrom] = useState<string | null>(null);
   const [audioPath, setAudioPath] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -83,12 +85,16 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
   }, []);
 const handleSend = () => {
   if (!text.trim()) return;
-  sendMessage(conversationId, text.trim(), { replyToId: selectedMessage?.id || null, forwardedFrom: forwardedFrom || null });
+  sendMessage(conversationId, text.trim(), {
+  replyToId: replyMessage?.id || null
+});
+
+setReplyMessage(null);
+
   setText("");
-  setSelectedMessage(null);
+  setActionMessage(null);
   setForwardedFrom(null);
 };
-
   const uploadFileToServer = async (fileUri: string, fileName: string, fileType: string) => {
     try {
       const formData = new FormData();
@@ -160,22 +166,21 @@ const handleSend = () => {
     }
   };
 
-  const handleLongPress = (item: Message) => {
-    const isSentByMe = item.senderId === userId;
-    setSelectedMessage(item);
+ const handleLongPress = (item: Message) => {
+  const isSentByMe = item.senderId === userId;
 
-    const options: string[] = [];
-    options.push("React ❤️");
-    options.push("Reply");
-    options.push("Forward");
-    options.push("Delete for me");
-    if (isSentByMe) options.push("Delete for everyone");
-    options.push("Cancel");
+  setActionMessage(item); // 👈 only action context
 
-    setMessageActionOptions(options);
-    setMessageActionCancelIndex(options.length - 1);
-    setTimeout(() => messageActionSheetRef.current?.show(), 50);
-  };
+  const options = ["React ❤️", "Reply", "Forward", "Delete for me"];
+  if (isSentByMe) options.push("Delete for everyone");
+  options.push("Cancel");
+
+  setMessageActionOptions(options);
+  setMessageActionCancelIndex(options.length - 1);
+
+  setTimeout(() => messageActionSheetRef.current?.show(), 50);
+};
+
 
   const startRecording = async () => {
     const hasPermission = await requestAudioPermission();
@@ -272,14 +277,20 @@ const handleSend = () => {
           contentContainerStyle={{ flexGrow: 1, justifyContent: messages.length === 0 ? "center" : "flex-end", paddingVertical: 10 }}
           ListEmptyComponent={<Text style={styles.noMessages}>No messages yet. Start chatting!</Text>}
         />
-
         <View style={styles.inputWrapper}>
-          {selectedMessage && (
+        {replyMessage && (
             <View style={styles.replyPreview}>
               <Text style={styles.replyLabel}>Replying to:</Text>
-              <Text numberOfLines={1} style={styles.replyText}>{typeof selectedMessage.content === 'string' ? selectedMessage.content : (selectedMessage.content as any).name || 'Attachment'}</Text>
-              <TouchableOpacity onPress={() => setSelectedMessage(null)}><Text style={styles.replyCancel}>✖</Text></TouchableOpacity>
-            </View>
+              <Text numberOfLines={1} style={styles.replyText}>
+  {typeof replyMessage.content === "string"
+    ? replyMessage.content
+    : (replyMessage.content as any).name || "Attachment"}
+</Text>
+
+<TouchableOpacity onPress={() => setReplyMessage(null)}>
+  <Text style={styles.replyCancel}>✖</Text>
+</TouchableOpacity>
+ </View>
           )}
           <TouchableOpacity onPress={handleAttachmentPress}><Text style={styles.attachButton}>📎</Text></TouchableOpacity>
           <TextInput style={styles.input} value={text} onChangeText={setText} placeholder="Type a message..." placeholderTextColor="rgba(255,255,255,0.6)" />
@@ -315,25 +326,25 @@ const handleSend = () => {
           cancelButtonIndex={messageActionCancelIndex}
           onPress={(index) => {
             const option = messageActionOptions[index];
-            if (!option || !selectedMessage) return;
+           if (!option || !actionMessage) return;
             if (option === "React ❤️") {
               setShowEmojiPicker(true);
             } else if (option === "Reply") {
-              // keep selectedMessage
+              setReplyMessage(actionMessage);
             } else if (option === "Forward") {
-              setForwardedFrom(selectedMessage.id!);
-              setText(typeof selectedMessage.content === 'string' ? selectedMessage.content : (selectedMessage.content as any).name || '');
+              setForwardedFrom(actionMessage.id!);
+              setText(typeof actionMessage.content === 'string' ? actionMessage.content : (actionMessage.content as any).name || '');
             } else if (option === "Delete for me") {
-              deleteMessage(selectedMessage.id!, false);
+              deleteMessage(actionMessage.id!, false);
             } else if (option === "Delete for everyone") {
-              deleteMessage(selectedMessage.id!, true);
+              deleteMessage(actionMessage.id!, true);
             }
           }}
         />
 
-        {showEmojiPicker && selectedMessage && (
+        {showEmojiPicker && actionMessage && (
           <View style={styles.emojiPicker}>
-            <EmojiSelector category={Categories.all} onEmojiSelected={(emoji) => { reactToMessage(selectedMessage.id!, emoji); setShowEmojiPicker(false); setSelectedMessage(null); }} showSearchBar={false} showTabs showHistory />
+            <EmojiSelector category={Categories.all} onEmojiSelected={(emoji) => { reactToMessage(actionMessage.id!, emoji); setShowEmojiPicker(false); setActionMessage(null); }} showSearchBar={false} showTabs showHistory />
           </View>
         )}
       </View>
