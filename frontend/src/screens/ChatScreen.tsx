@@ -21,6 +21,7 @@ import {
 import { useChat, Message } from "../hooks/useChat";
 import { useSocket } from "../context/SocketContext";
 import * as DocumentPicker from "@react-native-documents/picker";
+import { useNavigation } from "@react-navigation/native";
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -65,6 +66,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   const { messages, sendMessage, setMessages, reactToMessage } =
   useChat(conversationId, userId);
   const { onlineUsers } = useSocket();
+  const navigation = useNavigation<any>();
 
   const [text, setText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -74,7 +76,8 @@ const [audioPath, setAudioPath] = useState<string | null>(null);
 const [isRecording, setIsRecording] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
-  
+  const inputRef = useRef<TextInput>(null);
+
   const actionSheetRef = useRef<ActionSheet>(null);
   const messageActionSheetRef = useRef<ActionSheet>(null);
   const [messageActionOptions, setMessageActionOptions] = useState<string[]>([]);
@@ -379,8 +382,12 @@ const stopRecording = async () => {
       ? `Last seen at ${dayjs(receiverStatus.lastSeen).format("MMM D, YYYY h:mm A")}`
       : "Offline";
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}>
-      <View style={styles.container}>
+    <KeyboardAvoidingView
+  style={{ flex: 1 }}
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+  keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+>
+   <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.receiverName}>{receiverName}</Text>
           <Text style={styles.receiverStatus}>{statusText}</Text>
@@ -410,13 +417,15 @@ const stopRecording = async () => {
           <TouchableOpacity onPress={handleAttachmentPress}>
             <Text style={styles.attachButton}>📎</Text>
           </TouchableOpacity>
-          <TextInput
-            style={styles.input}
-            value={text}
-            onChangeText={setText}
-            placeholder="Type a message..."
-            placeholderTextColor="rgba(255,255,255,0.6)"
-          />
+       <TextInput
+  ref={inputRef}   // 👈 ADD THIS LINE
+  style={styles.input}
+  value={text}
+  onChangeText={setText}
+  placeholder="Type a message..."
+  placeholderTextColor="rgba(255,255,255,0.6)"
+/>
+
           <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
             <Text style={styles.sendButtonText}>Send</Text>
           </TouchableOpacity>
@@ -470,11 +479,32 @@ const stopRecording = async () => {
             if (option === "React ❤️") {
               setShowEmojiPicker(true);
             } else if (option === "Reply") {
-              // keep selectedMessage set
-            } else if (option === "Forward") {
-              setForwardedFrom(selectedMessage.id!);
-              setText(typeof selectedMessage.content === 'string' ? selectedMessage.content : (selectedMessage.content as any).name || "");
-            } else if (option === "Delete for me") {
+  setTimeout(() => {
+    inputRef.current?.focus(); 
+  }, 100);
+            } 
+            else if (option === "Forward") {
+  if (!selectedMessage) return;
+
+ navigation.navigate("ChatList", {
+  userId,
+  forwardMessage: selectedMessage,
+  onForward: (convOrReceiverId: string, isGroup?: boolean) => {
+    // If forwarding to a group, use conversationId
+    sendMessage(
+      isGroup ? convOrReceiverId : convOrReceiverId,
+      typeof selectedMessage.content === "string"
+        ? selectedMessage.content
+        : (selectedMessage.content as any).name || "",
+      { forwardedFrom: selectedMessage.id }
+    );
+    setSelectedMessage(null);
+    setText("");
+  },
+});
+
+
+} else if (option === "Delete for me") {
               deleteMessage(selectedMessage.id!, false);
             } else if (option === "Delete for everyone") {
               deleteMessage(selectedMessage.id!, true);
@@ -536,7 +566,6 @@ reactionEmoji: {
   letterSpacing: 0,
   includeFontPadding: true,
 },
-
 micButton: {
   width: 48,
   height: 48,

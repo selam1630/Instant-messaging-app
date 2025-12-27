@@ -3,10 +3,6 @@ import { useSocket } from "../context/SocketContext";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 
-/* ============================
-   MESSAGE CONTENT TYPES
-============================ */
-
 export type FileMessageContent = {
   type: "image" | "video" | "audio" | "file";
   url: string;
@@ -14,10 +10,6 @@ export type FileMessageContent = {
 };
 
 export type MessageContent = string | FileMessageContent;
-
-/* ============================
-   MESSAGE INTERFACE
-============================ */
 
 export interface Message {
   id?: string;

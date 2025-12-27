@@ -17,7 +17,7 @@ import { useSocket } from "../context/SocketContext";
 
 export default function ChatListScreen({ route }: any) {
   const navigation = useNavigation<any>();
-  const { userId } = route.params;
+  const { userId, forwardMessage, onForward } = route.params || {};
 
   const [conversations, setConversations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -145,18 +145,28 @@ export default function ChatListScreen({ route }: any) {
   const renderItem = ({ item }: any) => (
     <TouchableOpacity
       style={styles.userBox}
-      onPress={() => {
-        if (item.isGroup) {
-          navigation.navigate("GroupChat", {
-            conversationId: item.conversationId,
-            userId,
-            groupName: item.groupName,
-            participantIds: item.participantIds || [userId],
-          });
-        } else {
-          startChat(item.participantId, item.conversationId);
-        }
-      }}
+    onPress={() => {
+  if (forwardMessage && onForward) {
+    // Forward mode: send the message to this contact or group
+    const targetId = item.isGroup ? item.conversationId : item.participantId;
+    onForward(targetId, item.isGroup);
+    navigation.goBack(); 
+  } else {
+    // Normal chat
+    if (item.isGroup) {
+      navigation.navigate("GroupChat", {
+        conversationId: item.conversationId,
+        userId,
+        groupName: item.groupName,
+        participantIds: item.participantIds || [userId],
+      });
+    } else {
+      startChat(item.participantId, item.conversationId);
+    }
+  }
+}}
+
+
     >
       <Image
         source={{ uri: item.participantProfileImage || (item.isGroup ? "https://i.pravatar.cc/150?u=group" : "https://i.pravatar.cc/150") }}

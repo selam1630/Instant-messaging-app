@@ -81,14 +81,13 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
       wavFile: "voiceMessage.wav",
     });
   }, []);
-
-  const handleSend = () => {
-    if (!text.trim()) return;
-    sendMessage("", text.trim(), { replyToId: selectedMessage?.id || null, forwardedFrom: forwardedFrom || null });
-    setText("");
-    setSelectedMessage(null);
-    setForwardedFrom(null);
-  };
+const handleSend = () => {
+  if (!text.trim()) return;
+  sendMessage(conversationId, text.trim(), { replyToId: selectedMessage?.id || null, forwardedFrom: forwardedFrom || null });
+  setText("");
+  setSelectedMessage(null);
+  setForwardedFrom(null);
+};
 
   const uploadFileToServer = async (fileUri: string, fileName: string, fileType: string) => {
     try {
