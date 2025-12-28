@@ -46,13 +46,16 @@ interface GroupChatScreenProps {
 
 export default function GroupChatScreen({ route }: GroupChatScreenProps) {
   const { conversationId, userId, groupName, participantIds } = route.params;
-  const { messages, sendMessage, setMessages, reactToMessage } = useChat(conversationId, userId);
+  
+  // ✅ Added forwardMessage to destructuring
+  const { messages, sendMessage, setMessages, reactToMessage, forwardMessage } = useChat(conversationId, userId);
+  
   const { onlineUsers } = useSocket();
 
   const [text, setText] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [actionMessage, setActionMessage] = useState<Message | null>(null);
-const [replyMessage, setReplyMessage] = useState<Message | null>(null);
+  const [replyMessage, setReplyMessage] = useState<Message | null>(null);
 
   const [forwardedFrom, setForwardedFrom] = useState<string | null>(null);
   const [audioPath, setAudioPath] = useState<string | null>(null);
@@ -86,18 +89,21 @@ const [replyMessage, setReplyMessage] = useState<Message | null>(null);
       wavFile: "voiceMessage.wav",
     });
   }, []);
-const handleSend = () => {
-  if (!text.trim()) return;
-  sendMessage(conversationId, text.trim(), {
-  replyToId: replyMessage?.id || null
-});
 
-setReplyMessage(null);
+  const handleSend = () => {
+    if (!text.trim()) return;
+    
+    // ✅ For group chat, pass empty string as receiverId
+    sendMessage("", text.trim(), {
+      replyToId: replyMessage?.id || null
+    });
 
-  setText("");
-  setActionMessage(null);
-  setForwardedFrom(null);
-};
+    setReplyMessage(null);
+    setText("");
+    setActionMessage(null);
+    setForwardedFrom(null);
+  };
+
   const uploadFileToServer = async (fileUri: string, fileName: string, fileType: string) => {
     try {
       const formData = new FormData();
@@ -114,7 +120,13 @@ setReplyMessage(null);
       }
 
       const data = await uploadRes.json();
-      sendMessage("", { type: getMessageTypeFromMime(data.mimeType), url: data.fileUrl, name: data.originalName });
+      
+      // ✅ For group chat, pass empty string as receiverId
+      sendMessage("", { 
+        type: getMessageTypeFromMime(data.mimeType), 
+        url: data.fileUrl, 
+        name: data.originalName 
+      });
     } catch (err: any) {
       console.error("File upload error:", err);
       Alert.alert("Error", "An error occurred during file upload.");
@@ -143,6 +155,7 @@ setReplyMessage(null);
       }
     }
   };
+
   const pickAndSendFile = async () => {
     try {
       const res = await DocumentPicker.pick({ multiple: false, type: ["*/*"] });
@@ -169,21 +182,20 @@ setReplyMessage(null);
     }
   };
 
- const handleLongPress = (item: Message) => {
-  const isSentByMe = item.senderId === userId;
+  const handleLongPress = (item: Message) => {
+    const isSentByMe = item.senderId === userId;
 
-  setActionMessage(item); // 👈 only action context
+    setActionMessage(item);
 
-  const options = ["React ❤️", "Reply", "Forward", "Delete for me"];
-  if (isSentByMe) options.push("Delete for everyone");
-  options.push("Cancel");
+    const options = ["React ❤️", "Reply", "Forward", "Delete for me"];
+    if (isSentByMe) options.push("Delete for everyone");
+    options.push("Cancel");
 
-  setMessageActionOptions(options);
-  setMessageActionCancelIndex(options.length - 1);
+    setMessageActionOptions(options);
+    setMessageActionCancelIndex(options.length - 1);
 
-  setTimeout(() => messageActionSheetRef.current?.show(), 50);
-};
-
+    setTimeout(() => messageActionSheetRef.current?.show(), 50);
+  };
 
   const startRecording = async () => {
     const hasPermission = await requestAudioPermission();
@@ -226,7 +238,13 @@ setReplyMessage(null);
       }
 
       const data = await uploadRes.json();
-      sendMessage("", { type: "audio", url: data.fileUrl, name: data.originalName });
+      
+      // ✅ For group chat, pass empty string as receiverId
+      sendMessage("", { 
+        type: "audio", 
+        url: data.fileUrl, 
+        name: data.originalName 
+      });
     } catch (err) {
       console.error("Audio send error:", err);
       Alert.alert("Error", "Failed to send audio message. Check your network or file permissions.");
@@ -280,31 +298,50 @@ setReplyMessage(null);
           contentContainerStyle={{ flexGrow: 1, justifyContent: messages.length === 0 ? "center" : "flex-end", paddingVertical: 10 }}
           ListEmptyComponent={<Text style={styles.noMessages}>No messages yet. Start chatting!</Text>}
         />
+        
         <View style={styles.inputWrapper}>
-        {replyMessage && (
+          {replyMessage && (
             <View style={styles.replyPreview}>
               <Text style={styles.replyLabel}>Replying to:</Text>
               <Text numberOfLines={1} style={styles.replyText}>
-  {typeof replyMessage.content === "string"
-    ? replyMessage.content
-    : (replyMessage.content as any).name || "Attachment"}
-</Text>
-
-<TouchableOpacity onPress={() => setReplyMessage(null)}>
-  <Text style={styles.replyCancel}>✖</Text>
-</TouchableOpacity>
- </View>
+                {typeof replyMessage.content === "string"
+                  ? replyMessage.content
+                  : (replyMessage.content as any).name || "Attachment"}
+              </Text>
+              <TouchableOpacity onPress={() => setReplyMessage(null)}>
+                <Text style={styles.replyCancel}>✖</Text>
+              </TouchableOpacity>
+            </View>
           )}
-          <TouchableOpacity onPress={handleAttachmentPress}><Text style={styles.attachButton}>📎</Text></TouchableOpacity>
-          <TextInput style={styles.input} value={text} onChangeText={setText} placeholder="Type a message..." placeholderTextColor="rgba(255,255,255,0.6)" />
-          <TouchableOpacity style={styles.sendButton} onPress={handleSend}><Text style={styles.sendButtonText}>Send</Text></TouchableOpacity>
+          
+          <TouchableOpacity onPress={handleAttachmentPress}>
+            <Text style={styles.attachButton}>📎</Text>
+          </TouchableOpacity>
+          
+          <TextInput 
+            style={styles.input} 
+            value={text} 
+            onChangeText={setText} 
+            placeholder="Type a message..." 
+            placeholderTextColor="rgba(255,255,255,0.6)" 
+          />
+          
+          <TouchableOpacity style={styles.sendButton} onPress={handleSend}>
+            <Text style={styles.sendButtonText}>Send</Text>
+          </TouchableOpacity>
 
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <TouchableOpacity style={[styles.micButton, isRecording && styles.micButtonRecording]} onPress={() => (isRecording ? stopRecording() : startRecording())}>
+            <TouchableOpacity 
+              style={[styles.micButton, isRecording && styles.micButtonRecording]} 
+              onPress={() => (isRecording ? stopRecording() : startRecording())}
+            >
               <Text style={styles.micIcon}>{isRecording ? "⏹️" : "🎤"}</Text>
             </TouchableOpacity>
+            
             {audioPath && !isRecording && (
-              <TouchableOpacity style={styles.retryButton} onPress={() => setAudioPath(null)}><Text style={styles.retryIcon}>↻</Text></TouchableOpacity>
+              <TouchableOpacity style={styles.retryButton} onPress={() => setAudioPath(null)}>
+                <Text style={styles.retryIcon}>↻</Text>
+              </TouchableOpacity>
             )}
           </View>
         </View>
@@ -323,33 +360,40 @@ setReplyMessage(null);
           }}
         />
 
+        {/* ✅ FIXED: Updated forward handler to use forwardMessage function */}
         <ActionSheet
           ref={messageActionSheetRef}
           options={messageActionOptions}
           cancelButtonIndex={messageActionCancelIndex}
           onPress={(index) => {
             const option = messageActionOptions[index];
-           if (!option || !actionMessage) return;
+            if (!option || !actionMessage) return;
+            
             if (option === "React ❤️") {
               setShowEmojiPicker(true);
             } else if (option === "Reply") {
               setReplyMessage(actionMessage);
             } else if (option === "Forward") {
-  navigation.navigate("ChatList", {
-    userId,
-    forwardMessage: actionMessage,
-    onForward: (convOrReceiverId: string, isGroup?: boolean) => {
-      sendMessage(
-        convOrReceiverId,
-        typeof actionMessage.content === "string"
-          ? actionMessage.content
-          : (actionMessage.content as any).name || "",
-        { forwardedFrom: actionMessage.id }
-      );
-    },
-  });
-}
- else if (option === "Delete for me") {
+              navigation.navigate("ChatList", {
+                userId,
+                forwardMessage: actionMessage,
+                onForward: async (targetId: string, isGroup: boolean) => {
+                  if (!targetId || targetId === userId) {
+                    Alert.alert("Cannot forward to yourself!");
+                    return;
+                  }
+
+                  try {
+                    await forwardMessage(targetId, isGroup, actionMessage);
+                    Alert.alert("Message forwarded!");
+                    navigation.goBack();
+                  } catch (error) {
+                    console.error("Forward error:", error);
+                    Alert.alert("Error", "Failed to forward message");
+                  }
+                },
+              });
+            } else if (option === "Delete for me") {
               deleteMessage(actionMessage.id!, false);
             } else if (option === "Delete for everyone") {
               deleteMessage(actionMessage.id!, true);
@@ -359,7 +403,17 @@ setReplyMessage(null);
 
         {showEmojiPicker && actionMessage && (
           <View style={styles.emojiPicker}>
-            <EmojiSelector category={Categories.all} onEmojiSelected={(emoji) => { reactToMessage(actionMessage.id!, emoji); setShowEmojiPicker(false); setActionMessage(null); }} showSearchBar={false} showTabs showHistory />
+            <EmojiSelector 
+              category={Categories.all} 
+              onEmojiSelected={(emoji) => { 
+                reactToMessage(actionMessage.id!, emoji); 
+                setShowEmojiPicker(false); 
+                setActionMessage(null); 
+              }} 
+              showSearchBar={false} 
+              showTabs 
+              showHistory 
+            />
           </View>
         )}
       </View>

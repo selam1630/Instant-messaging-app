@@ -146,12 +146,24 @@ export default function ChatListScreen({ route }: any) {
     <TouchableOpacity
       style={styles.userBox}
     onPress={() => {
-  if (forwardMessage && onForward) {
-    // Forward mode: send the message to this contact or group
-    const targetId = item.isGroup ? item.conversationId : item.participantId;
-    onForward(targetId, item.isGroup);
-    navigation.goBack(); 
-  } else {
+const otherParticipantId = item.isGroup
+  ? item.conversationId
+  : item.participantId; // for 1-on-1 chats, use participantId directly
+
+const targetId = item.isGroup ? item.conversationId : otherParticipantId;
+if (forwardMessage && onForward) {
+  const targetId = item.isGroup ? item.conversationId : item.participantId;
+
+  if (!targetId || targetId === userId) {
+    Alert.alert("Cannot forward to yourself!");
+    return;
+  }
+
+  onForward(targetId, item.isGroup); // ✅ works for groups and 1-on-1
+  return;
+}
+
+else {
     // Normal chat
     if (item.isGroup) {
       navigation.navigate("GroupChat", {

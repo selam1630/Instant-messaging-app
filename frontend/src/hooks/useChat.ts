@@ -244,35 +244,71 @@ export function useChat(conversationId: string, userId: string) {
     }
   };
 
+  /* ============================
+     FORWARD MESSAGE
+  ============================ */
+
   const forwardMessage = async (
-  targetConversationId: string,
-  receiverId: string,
-  originalMessage: Message
-) => {
-  const newMessage: Message = {
-    conversationId: targetConversationId, // 👈 IMPORTANT
-    senderId: userId,
-    receiverId,
-    content: originalMessage.content,
-    status: "sent",
-    timestamp: new Date().toISOString(),
-    forwardedFrom: originalMessage.id || null,
+    targetId: string,
+    isGroup: boolean,
+    originalMessage: Message
+  ) => {
+    try {
+      if (isGroup) {
+        // For groups: targetId is conversationId
+        const newMessage: Message = {
+          conversationId: targetId,
+          senderId: userId,
+          receiverId: "", // Empty for groups
+          content: originalMessage.content,
+          status: "sent",
+          timestamp: new Date().toISOString(),
+          forwardedFrom: originalMessage.id || null,
+        };
+
+        socket?.emit("send_message", newMessage);
+
+        await fetch(`${BACKEND_URL}/api/conversation/messages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...newMessage,
+            isGroup: true,
+          }),
+        });
+      } else {
+        const res = await fetch(
+          `${BACKEND_URL}/api/conversation/get-or-create?user1=${userId}&user2=${targetId}`
+        );
+        
+        if (!res.ok) throw new Error("Failed to get conversation");
+        
+        const data = await res.json();
+        const targetConversationId = data.conversationId;
+
+        const newMessage: Message = {
+          conversationId: targetConversationId,
+          senderId: userId,
+          receiverId: targetId,
+          content: originalMessage.content,
+          status: "sent",
+          timestamp: new Date().toISOString(),
+          forwardedFrom: originalMessage.id || null,
+        };
+
+        socket?.emit("send_message", newMessage);
+
+        await fetch(`${BACKEND_URL}/api/conversation/messages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(newMessage),
+        });
+      }
+    } catch (err) {
+      console.error("Forward message error:", err);
+      throw err;
+    }
   };
-
-  // 1️⃣ emit realtime
-  socket?.emit("send_message", newMessage);
-
-  // 2️⃣ persist to backend
-  try {
-    await fetch(`${BACKEND_URL}/api/conversation/messages`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newMessage),
-    });
-  } catch (err) {
-    console.error("Forward message error:", err);
-  }
-};
 
   /* ============================
      REACT TO MESSAGE

@@ -63,7 +63,7 @@ interface ChatScreenProps {
 
 export default function ChatScreen({ route }: ChatScreenProps) {
   const { conversationId, userId, receiverId, receiverName } = route.params;
-  const { messages, sendMessage, setMessages, reactToMessage } =
+  const { messages, sendMessage, setMessages, reactToMessage,forwardMessage } =
   useChat(conversationId, userId);
   const { onlineUsers } = useSocket();
   const navigation = useNavigation<any>();
@@ -508,21 +508,28 @@ const stopRecording = async () => {
         inputRef.current?.focus();
       }, 100);
     }
-
-   else if (option === "Forward") {
+    else if (option === "Forward") {
   navigation.navigate("ChatList", {
     userId,
     forwardMessage: actionMessage,
-    onForward: (convOrReceiverId: string, isGroup?: boolean) => {
-      sendMessage(
-        convOrReceiverId,
-        actionMessage.content, // ✅ FIXED
-        { forwardedFrom: actionMessage.id }
-      );
-      setText("");
+    onForward: async (targetId: string, isGroup: boolean) => {
+      if (!targetId || targetId === userId) {
+        Alert.alert("Cannot forward to yourself!");
+        return;
+      }
+
+      try {
+        await forwardMessage(targetId, isGroup, actionMessage);
+        Alert.alert("Message forwarded!");
+        navigation.goBack();
+      } catch (error) {
+        console.error("Forward error:", error);
+        Alert.alert("Error", "Failed to forward message");
+      }
     },
   });
 }
+
     else if (option === "Delete for me") {
       deleteMessage(actionMessage.id!, false);
     }
@@ -531,7 +538,7 @@ const stopRecording = async () => {
       deleteMessage(actionMessage.id!, true);
     }
 
-    setActionMessage(null); // cleanup
+    setActionMessage(null); 
   }}
 />
       </View>
