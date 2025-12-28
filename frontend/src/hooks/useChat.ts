@@ -244,6 +244,36 @@ export function useChat(conversationId: string, userId: string) {
     }
   };
 
+  const forwardMessage = async (
+  targetConversationId: string,
+  receiverId: string,
+  originalMessage: Message
+) => {
+  const newMessage: Message = {
+    conversationId: targetConversationId, // 👈 IMPORTANT
+    senderId: userId,
+    receiverId,
+    content: originalMessage.content,
+    status: "sent",
+    timestamp: new Date().toISOString(),
+    forwardedFrom: originalMessage.id || null,
+  };
+
+  // 1️⃣ emit realtime
+  socket?.emit("send_message", newMessage);
+
+  // 2️⃣ persist to backend
+  try {
+    await fetch(`${BACKEND_URL}/api/conversation/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newMessage),
+    });
+  } catch (err) {
+    console.error("Forward message error:", err);
+  }
+};
+
   /* ============================
      REACT TO MESSAGE
   ============================ */
@@ -262,6 +292,7 @@ export function useChat(conversationId: string, userId: string) {
     messages,
     sendMessage,
     setMessages,
-    reactToMessage, // ✅ NEW
+    reactToMessage, 
+    forwardMessage,
   };
 }

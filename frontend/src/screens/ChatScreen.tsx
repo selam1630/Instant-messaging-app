@@ -438,7 +438,7 @@ const stopRecording = async () => {
             <Text style={styles.attachButton}>📎</Text>
           </TouchableOpacity>
        <TextInput
-  ref={inputRef}   // 👈 ADD THIS LINE
+  ref={inputRef}   
   style={styles.input}
   value={text}
   onChangeText={setText}
@@ -509,23 +509,20 @@ const stopRecording = async () => {
       }, 100);
     }
 
-    else if (option === "Forward") {
-      navigation.navigate("ChatList", {
-        userId,
-        forwardMessage: actionMessage,
-        onForward: (convOrReceiverId: string, isGroup?: boolean) => {
-          sendMessage(
-            convOrReceiverId,
-            typeof actionMessage.content === "string"
-              ? actionMessage.content
-              : (actionMessage.content as any).name || "",
-            { forwardedFrom: actionMessage.id }
-          );
-          setText("");
-        },
-      });
-    }
-
+   else if (option === "Forward") {
+  navigation.navigate("ChatList", {
+    userId,
+    forwardMessage: actionMessage,
+    onForward: (convOrReceiverId: string, isGroup?: boolean) => {
+      sendMessage(
+        convOrReceiverId,
+        actionMessage.content, // ✅ FIXED
+        { forwardedFrom: actionMessage.id }
+      );
+      setText("");
+    },
+  });
+}
     else if (option === "Delete for me") {
       deleteMessage(actionMessage.id!, false);
     }

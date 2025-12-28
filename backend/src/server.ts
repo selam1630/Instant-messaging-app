@@ -37,16 +37,11 @@ app.get("/", (_, res) => {
 });
 
 const server = http.createServer(app);
-
-/* ---------------- SOCKET SETUP ---------------- */
-/* ---------------- ONLINE USERS MAP ---------------- */
 const onlineUsers: Map<string, string> = new Map();
 
 const io = new SocketIOServer(server, {
   cors: { origin: "*" },
 });
-
-// expose io and onlineUsers to controllers
 setIO(io);
 setOnlineUsers(onlineUsers);
 

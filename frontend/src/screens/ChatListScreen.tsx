@@ -165,8 +165,6 @@ export default function ChatListScreen({ route }: any) {
     }
   }
 }}
-
-
     >
       <Image
         source={{ uri: item.participantProfileImage || (item.isGroup ? "https://i.pravatar.cc/150?u=group" : "https://i.pravatar.cc/150") }}

@@ -22,6 +22,7 @@ import AudioRecord from "react-native-audio-record";
 import ActionSheet from "react-native-actionsheet";
 import { Image } from "react-native";
 import EmojiSelector, { Categories } from "react-native-emoji-selector";
+import { useNavigation } from "@react-navigation/native";
 
 const BACKEND_URL = "http://localhost:4000";
 
@@ -56,6 +57,8 @@ const [replyMessage, setReplyMessage] = useState<Message | null>(null);
   const [forwardedFrom, setForwardedFrom] = useState<string | null>(null);
   const [audioPath, setAudioPath] = useState<string | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+
+  const navigation = useNavigation<any>();
 
   const flatListRef = useRef<FlatList>(null);
   const actionSheetRef = useRef<ActionSheet>(null);
@@ -332,9 +335,21 @@ setReplyMessage(null);
             } else if (option === "Reply") {
               setReplyMessage(actionMessage);
             } else if (option === "Forward") {
-              setForwardedFrom(actionMessage.id!);
-              setText(typeof actionMessage.content === 'string' ? actionMessage.content : (actionMessage.content as any).name || '');
-            } else if (option === "Delete for me") {
+  navigation.navigate("ChatList", {
+    userId,
+    forwardMessage: actionMessage,
+    onForward: (convOrReceiverId: string, isGroup?: boolean) => {
+      sendMessage(
+        convOrReceiverId,
+        typeof actionMessage.content === "string"
+          ? actionMessage.content
+          : (actionMessage.content as any).name || "",
+        { forwardedFrom: actionMessage.id }
+      );
+    },
+  });
+}
+ else if (option === "Delete for me") {
               deleteMessage(actionMessage.id!, false);
             } else if (option === "Delete for everyone") {
               deleteMessage(actionMessage.id!, true);
