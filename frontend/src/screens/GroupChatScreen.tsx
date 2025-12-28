@@ -420,7 +420,6 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
     </KeyboardAvoidingView>
   );
 }
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#7b2cbf" },
   header: { padding: 16, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.2)", backgroundColor: "#7b2cbf" },
