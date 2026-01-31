@@ -30,7 +30,6 @@ import AudioRecord from 'react-native-audio-record';
 import AudioRecorderPlayer from "react-native-audio-recorder-player";
 import ActionSheet from "react-native-actionsheet";
 import { Image } from "react-native";
-import EmojiSelector, { Categories } from 'react-native-emoji-selector';
 dayjs.extend(relativeTime);
 
 const BACKEND_URL = "http://localhost:4000";
@@ -452,17 +451,21 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
         {showEmojiPicker && reactionMessage && (
           <View style={styles.emojiPicker}>
-            <EmojiSelector
-              category={Categories.all}
-              onEmojiSelected={(emoji) => {
-                reactToMessage(reactionMessage.id!, emoji);
-                setShowEmojiPicker(false);
-                setReactionMessage(null);
-              }}
-              showSearchBar={false}
-              showTabs
-              showHistory
-            />
+            <View style={styles.simpleEmojiContainer}>
+              {['❤️', '👍', '👎', '😂', '😮', '😢', '😡', '🔥', '💯', '🙏'].map((emoji) => (
+                <TouchableOpacity
+                  key={emoji}
+                  style={styles.emojiButton}
+                  onPress={() => {
+                    reactToMessage(reactionMessage.id!, emoji);
+                    setShowEmojiPicker(false);
+                    setReactionMessage(null);
+                  }}
+                >
+                  <Text style={styles.emojiText}>{emoji}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         )}
 
@@ -772,11 +775,29 @@ const styles = StyleSheet.create({
     bottom: 70,
     left: 0,
     right: 0,
-    height: 300,
+    height: 120,
     backgroundColor: "#fff",
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     overflow: "hidden",
+  },
+  simpleEmojiContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    padding: 16,
+    justifyContent: 'space-around',
+  },
+  emojiButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 4,
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+  },
+  emojiText: {
+    fontSize: 24,
   },
   messageText: { 
     fontSize: 16 
