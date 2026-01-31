@@ -21,7 +21,6 @@ import RNFS from "react-native-fs";
 import AudioRecord from "react-native-audio-record";
 import ActionSheet from "react-native-actionsheet";
 import { Image } from "react-native";
-import EmojiSelector, { Categories } from "react-native-emoji-selector";
 import { useNavigation } from "@react-navigation/native";
 
 const BACKEND_URL = "http://localhost:4000";
@@ -32,7 +31,6 @@ export type FileMessageContent = {
   name?: string;
 };
 type MessageContent = string | FileMessageContent;
-
 interface GroupChatScreenProps {
   route: {
     params: {
@@ -403,17 +401,21 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
 
         {showEmojiPicker && actionMessage && (
           <View style={styles.emojiPicker}>
-            <EmojiSelector 
-              category={Categories.all} 
-              onEmojiSelected={(emoji) => { 
-                reactToMessage(actionMessage.id!, emoji); 
-                setShowEmojiPicker(false); 
-                setActionMessage(null); 
-              }} 
-              showSearchBar={false} 
-              showTabs 
-              showHistory 
-            />
+            <View style={styles.simpleEmojiContainer}>
+              {['❤️', '👍', '👎', '😂', '😮', '😢', '😡', '🔥', '💯', '🙏'].map((emoji) => (
+                <TouchableOpacity
+                  key={emoji}
+                  style={styles.emojiButton}
+                  onPress={() => {
+                    reactToMessage(actionMessage.id!, emoji);
+                    setShowEmojiPicker(false);
+                    setActionMessage(null);
+                  }}
+                >
+                  <Text style={styles.emojiText}>{emoji}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         )}
       </View>
@@ -436,7 +438,10 @@ const styles = StyleSheet.create({
   micIcon: { fontSize: 24, color: "#7b2cbf" },
   retryButton: { marginLeft: 8, width: 38, height: 38, borderRadius: 19, backgroundColor: "rgba(255,255,255,0.9)", alignItems: "center", justifyContent: "center" },
   retryIcon: { fontSize: 18, color: "#7b2cbf" },
-  emojiPicker: { position: "absolute", bottom: 70, left: 0, right: 0, height: 300, backgroundColor: "#fff", borderTopLeftRadius: 16, borderTopRightRadius: 16, overflow: "hidden" },
+  emojiPicker: { position: "absolute", bottom: 70, left: 0, right: 0, height: 120, backgroundColor: "#fff", borderTopLeftRadius: 16, borderTopRightRadius: 16, overflow: "hidden" },
+  simpleEmojiContainer: { flexDirection: 'row', flexWrap: 'wrap', padding: 16, justifyContent: 'space-around' },
+  emojiButton: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center', margin: 4, borderRadius: 8, backgroundColor: '#f0f0f0' },
+  emojiText: { fontSize: 24 },
   messageText: { fontSize: 16 },
   sentText: { color: "#4b0082" },
   receivedText: { color: "#fff" },
