@@ -20,8 +20,9 @@ import dayjs from "dayjs";
 import RNFS from "react-native-fs";
 import AudioRecord from "react-native-audio-record";
 import ActionSheet from "react-native-actionsheet";
-import { Image } from "react-native";
+import { Image, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+
 
 const BACKEND_URL = "http://localhost:4000";
 
@@ -45,7 +46,6 @@ interface GroupChatScreenProps {
 export default function GroupChatScreen({ route }: GroupChatScreenProps) {
   const { conversationId, userId, groupName, participantIds } = route.params;
   
-  // ✅ Added forwardMessage to destructuring
   const { messages, sendMessage, setMessages, reactToMessage, forwardMessage } = useChat(conversationId, userId);
   
   const { onlineUsers } = useSocket();
@@ -90,8 +90,6 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
 
   const handleSend = () => {
     if (!text.trim()) return;
-    
-    // ✅ For group chat, pass empty string as receiverId
     sendMessage("", text.trim(), {
       replyToId: replyMessage?.id || null
     });
@@ -118,8 +116,6 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
       }
 
       const data = await uploadRes.json();
-      
-      // ✅ For group chat, pass empty string as receiverId
       sendMessage("", { 
         type: getMessageTypeFromMime(data.mimeType), 
         url: data.fileUrl, 
@@ -236,8 +232,6 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
       }
 
       const data = await uploadRes.json();
-      
-      // ✅ For group chat, pass empty string as receiverId
       sendMessage("", { 
         type: "audio", 
         url: data.fileUrl, 
@@ -401,21 +395,40 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
 
         {showEmojiPicker && actionMessage && (
           <View style={styles.emojiPicker}>
-            <View style={styles.simpleEmojiContainer}>
-              {['❤️', '👍', '👎', '😂', '😮', '😢', '😡', '🔥', '💯', '🙏'].map((emoji) => (
-                <TouchableOpacity
-                  key={emoji}
-                  style={styles.emojiButton}
-                  onPress={() => {
-                    reactToMessage(actionMessage.id!, emoji);
-                    setShowEmojiPicker(false);
-                    setActionMessage(null);
-                  }}
-                >
-                  <Text style={styles.emojiText}>{emoji}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <ScrollView
+  contentContainerStyle={styles.simpleEmojiContainer}
+  showsVerticalScrollIndicator={false}
+>
+  {[
+    // Smileys
+    '😀','😁','😂','🤣','😊','😍','😘','😜','🤔','😎','😭','😡','😱','😴',
+
+    // Gestures
+    '👍','👎','👏','🙏','🤝','👌','✌️','🤞','🫶',
+
+    // Hearts
+    '❤️','🧡','💛','💚','💙','💜','🖤','🤍','💔','💕','💯',
+
+    // Objects
+    '🔥','⭐','🌟','🎉','🎊','🎁','⚡','💎','📌','📎',
+
+    // Fun
+    '😮','😢','🤯','🤩','🥳','😇','😈','🤡','💀'
+  ].map((emoji) => (
+    <TouchableOpacity
+      key={emoji}
+      style={styles.emojiButton}
+      onPress={() => {
+        reactToMessage(actionMessage.id!, emoji);
+        setShowEmojiPicker(false);
+        setActionMessage(null);
+      }}
+    >
+      <Text style={styles.emojiText}>{emoji}</Text>
+    </TouchableOpacity>
+  ))}
+</ScrollView>
+
           </View>
         )}
       </View>
@@ -438,7 +451,7 @@ const styles = StyleSheet.create({
   micIcon: { fontSize: 24, color: "#7b2cbf" },
   retryButton: { marginLeft: 8, width: 38, height: 38, borderRadius: 19, backgroundColor: "rgba(255,255,255,0.9)", alignItems: "center", justifyContent: "center" },
   retryIcon: { fontSize: 18, color: "#7b2cbf" },
-  emojiPicker: { position: "absolute", bottom: 70, left: 0, right: 0, height: 120, backgroundColor: "#fff", borderTopLeftRadius: 16, borderTopRightRadius: 16, overflow: "hidden" },
+  emojiPicker: { position: "absolute", bottom: 70, left: 0, right: 0, height: 250, backgroundColor: "#fff", borderTopLeftRadius: 16, borderTopRightRadius: 16, overflow: "hidden" },
   simpleEmojiContainer: { flexDirection: 'row', flexWrap: 'wrap', padding: 16, justifyContent: 'space-around' },
   emojiButton: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center', margin: 4, borderRadius: 8, backgroundColor: '#f0f0f0' },
   emojiText: { fontSize: 24 },

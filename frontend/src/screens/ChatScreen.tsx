@@ -12,6 +12,7 @@ import {
   Alert,
   PermissionsAndroid,
   Pressable,
+  ScrollView,
 } from "react-native";
 import {
   launchCamera,
@@ -451,21 +452,40 @@ export default function ChatScreen({ route }: ChatScreenProps) {
 
         {showEmojiPicker && reactionMessage && (
           <View style={styles.emojiPicker}>
-            <View style={styles.simpleEmojiContainer}>
-              {['❤️', '👍', '👎', '😂', '😮', '😢', '😡', '🔥', '💯', '🙏'].map((emoji) => (
-                <TouchableOpacity
-                  key={emoji}
-                  style={styles.emojiButton}
-                  onPress={() => {
-                    reactToMessage(reactionMessage.id!, emoji);
-                    setShowEmojiPicker(false);
-                    setReactionMessage(null);
-                  }}
-                >
-                  <Text style={styles.emojiText}>{emoji}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            <ScrollView
+  contentContainerStyle={styles.simpleEmojiContainer}
+  showsVerticalScrollIndicator={false}
+>
+  {[
+    // Smileys
+    '😀','😁','😂','🤣','😊','😍','😘','😜','🤔','😎','😭','😡','😱','😴',
+
+    // Gestures
+    '👍','👎','👏','🙏','🤝','👌','✌️','🤞','🫶',
+
+    // Hearts
+    '❤️','🧡','💛','💚','💙','💜','🖤','🤍','💔','💕','💯',
+
+    // Objects
+    '🔥','⭐','🌟','🎉','🎊','🎁','⚡','💎','📌','📎',
+
+    // Fun
+    '😮','😢','🤯','🤩','🥳','😇','😈','🤡','💀'
+  ].map((emoji) => (
+    <TouchableOpacity
+      key={emoji}
+      style={styles.emojiButton}
+      onPress={() => {
+        reactToMessage(reactionMessage.id!, emoji);
+        setShowEmojiPicker(false);
+        setReactionMessage(null);
+      }}
+    >
+      <Text style={styles.emojiText}>{emoji}</Text>
+    </TouchableOpacity>
+  ))}
+</ScrollView>
+
           </View>
         )}
 
@@ -775,7 +795,7 @@ const styles = StyleSheet.create({
     bottom: 70,
     left: 0,
     right: 0,
-    height: 120,
+    height: 250,
     backgroundColor: "#fff",
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
