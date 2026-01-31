@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const usercontroller_1 = require("../controllers/usercontroller");
+const authMiddleware_1 = require("../Middleware/authMiddleware");
+const router = (0, express_1.Router)();
+router.get("/", usercontroller_1.getAllUsers);
+router.get("/:id", usercontroller_1.getUser);
+router.get("/:id/status", usercontroller_1.getUserStatus);
+router.get("/offline-status", usercontroller_1.getOfflineUsersStatus);
+router.put("/:id/profile-image", authMiddleware_1.authenticate, usercontroller_1.updateProfileImage);
+exports.default = router;

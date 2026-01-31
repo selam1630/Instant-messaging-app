@@ -132,7 +132,7 @@ export default function ChatListScreen({ route }: any) {
       if (res.ok) {
         Alert.alert("Success", "Contact added!");
         setPhoneNumber("");
-        fetchConversations(); // Refresh list
+        fetchConversations();
       } else {
         Alert.alert("Error", data.message || "Failed to add contact");
       }
@@ -209,6 +209,12 @@ else {
           >
             <Text style={styles.createGroupText}>Create Group</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => navigation.navigate('Profile', { userId })}
+          >
+            <Text style={styles.profileText}>Profile</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
@@ -238,7 +244,6 @@ else {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -260,6 +265,8 @@ const styles = StyleSheet.create({
   headerActions: { flexDirection: 'row', alignItems: 'center' },
   createGroupButton: { backgroundColor: '#fff', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginRight: 8 },
   createGroupText: { color: '#7b2cbf', fontWeight: 'bold' },
+  profileButton: { backgroundColor: '#fff', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, marginRight: 8 },
+  profileText: { color: '#7b2cbf', fontWeight: 'bold' },
   logoutButton: {
     backgroundColor: "#fff",
     paddingHorizontal: 14,
