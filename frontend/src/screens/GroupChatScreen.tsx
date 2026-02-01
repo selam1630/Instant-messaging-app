@@ -519,7 +519,13 @@ const styles = StyleSheet.create({
   receiverName: { fontSize: 20, fontWeight: "bold", color: "#fff" },
   receiverStatus: { fontSize: 14, color: "rgba(255,255,255,0.7)", marginTop: 2 },
   senderName: { fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 2 },
-  messageContainer: { padding: 12, marginVertical: 4, borderRadius: 16, maxWidth: "80%" },
+  messageContainer: {
+  padding: 12,
+  marginVertical: 4,
+  borderRadius: 16,
+  backgroundColor: '#d6bbff', // or received
+  alignSelf: 'flex-start',    // default, overridden dynamically
+},
   sent: { backgroundColor: "#d6bbff", alignSelf: "flex-end", borderTopLeftRadius: 16, borderTopRightRadius: 0, borderBottomLeftRadius: 16, borderBottomRightRadius: 16 },
   received: { backgroundColor: "rgba(255,255,255,0.2)", alignSelf: "flex-start", borderTopLeftRadius: 0, borderTopRightRadius: 16, borderBottomLeftRadius: 16, borderBottomRightRadius: 16 },
   reactionsRow: { flexDirection: "row", marginTop: 4, flexWrap: "wrap" },
