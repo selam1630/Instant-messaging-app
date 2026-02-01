@@ -243,36 +243,115 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
     }
   };
 
-  const renderMessage = ({ item }: { item: Message }) => {
-    const isSentByMe = item.senderId === userId;
-    const content = item.content as MessageContent;
-    return (
-      <TouchableOpacity
-        onLongPress={() => handleLongPress(item)}
-        activeOpacity={0.8}
-        style={[styles.messageContainer, isSentByMe ? styles.sent : styles.received]}
-      >
-        {!isSentByMe && typeof content !== "string" && <Text style={styles.senderName}>{(item as any).sender?.name || "Unknown"}</Text>}
-        {typeof content === "string" ? (
-          <Text style={[styles.messageText, isSentByMe ? styles.sentText : styles.receivedText]}>{content}</Text>
-        ) : (
-          <>
-            {content.type === "image" && <TouchableOpacity onPress={() => Linking.openURL(content.url)}><Image source={{ uri: content.url }} style={{ width: 220, height: 220, borderRadius: 12 }} /></TouchableOpacity>}
-            {content.type === "video" && <TouchableOpacity onPress={() => Linking.openURL(content.url)}><Text style={styles.fileText}>🎥 {content.name}</Text></TouchableOpacity>}
-            {content.type === "audio" && <TouchableOpacity onPress={() => Linking.openURL(content.url)}><Text style={styles.fileText}>🎧 {content.name}</Text></TouchableOpacity>}
-            {content.type === "file" && <TouchableOpacity onPress={() => Linking.openURL(content.url)}><Text style={styles.fileText}>📎 {content.name}</Text></TouchableOpacity>}
-          </>
+  // (imports stay EXACTLY the same)
+
+const renderMessage = ({ item }: { item: Message }) => {
+  const isSentByMe = item.senderId === userId;
+  const content = item.content as MessageContent;
+  const sender = (item as any).sender;
+
+  return (
+    <View
+      style={[
+        styles.messageRow,
+        isSentByMe ? styles.rowSent : styles.rowReceived,
+      ]}
+    >
+      {/* Avatar */}
+      {!isSentByMe && (
+        <Image
+          source={{
+            uri:
+              sender?.profileImage ||
+              "https://i.pravatar.cc/150?u=" + item.senderId,
+          }}
+          style={styles.avatar}
+        />
+      )}
+
+      <View style={{ maxWidth: "80%" }}>
+        {/* Sender name */}
+        {!isSentByMe && (
+          <Text style={styles.senderName}>
+            {sender?.name || "Unknown"}
+          </Text>
         )}
-        {item.reactions && item.reactions.length > 0 && (
-          <View style={styles.reactionsRow}>{item.reactions.map((r, index) => (<Text key={index} style={styles.reactionEmoji}>{r.emoji}</Text>))}</View>
-        )}
-        <View style={styles.metaRow}>
-          {item.timestamp && <Text style={styles.timestamp}>{new Date(item.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</Text>}
-          {isSentByMe && <Text style={styles.readReceipt}>{item.status === "read" ? "✔✔" : item.status === "delivered" ? "✔" : ""}</Text>}
-        </View>
-      </TouchableOpacity>
-    );
-  };
+
+        <TouchableOpacity
+          onLongPress={() => handleLongPress(item)}
+          activeOpacity={0.8}
+          style={[
+            styles.messageContainer,
+            isSentByMe ? styles.sent : styles.received,
+          ]}
+        >
+          {typeof content === "string" ? (
+            <Text
+              style={[
+                styles.messageText,
+                isSentByMe ? styles.sentText : styles.receivedText,
+              ]}
+            >
+              {content}
+            </Text>
+          ) : (
+            <>
+              {content.type === "image" && (
+                <TouchableOpacity onPress={() => Linking.openURL(content.url)}>
+                  <Image
+                    source={{ uri: content.url }}
+                    style={{ width: 220, height: 220, borderRadius: 12 }}
+                  />
+                </TouchableOpacity>
+              )}
+
+              {content.type === "video" && (
+                <Text style={styles.fileText}>🎥 {content.name}</Text>
+              )}
+
+              {content.type === "audio" && (
+                <Text style={styles.fileText}>🎧 {content.name}</Text>
+              )}
+
+              {content.type === "file" && (
+                <Text style={styles.fileText}>📎 {content.name}</Text>
+              )}
+            </>
+          )}
+{item.reactions?.length ? (
+  <View style={styles.reactionsRow}>
+    {item.reactions?.map((r, i) => (
+      <Text key={i} style={styles.reactionEmoji}>
+        {r.emoji}
+      </Text>
+    ))}
+  </View>
+) : null}
+
+          <View style={styles.metaRow}>
+            {item.timestamp && (
+              <Text style={styles.timestamp}>
+                {new Date(item.timestamp).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Text>
+            )}
+            {isSentByMe && (
+              <Text style={styles.readReceipt}>
+                {item.status === "read"
+                  ? "✔✔"
+                  : item.status === "delivered"
+                  ? "✔"
+                  : ""}
+              </Text>
+            )}
+          </View>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined} keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}>
@@ -458,6 +537,29 @@ const styles = StyleSheet.create({
   messageText: { fontSize: 16 },
   sentText: { color: "#4b0082" },
   receivedText: { color: "#fff" },
+  messageRow: {
+  flexDirection: "row",
+  alignItems: "flex-end",
+  marginVertical: 6,
+  paddingHorizontal: 8,
+},
+
+rowReceived: {
+  alignSelf: "flex-start",
+},
+
+rowSent: {
+  alignSelf: "flex-end",
+},
+
+avatar: {
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  marginRight: 8,
+  borderWidth: 1,
+  borderColor: "rgba(255,255,255,0.3)",
+},
   fileText: { fontSize: 16, textDecorationLine: "underline" },
   metaRow: { flexDirection: "row", justifyContent: "flex-end", marginTop: 4 },
   timestamp: { fontSize: 10, color: "rgba(255,255,255,0.6)", marginRight: 6 },
