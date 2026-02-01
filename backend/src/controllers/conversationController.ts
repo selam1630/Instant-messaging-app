@@ -42,42 +42,74 @@ export const getOrCreateConversation = async (req: Request, res: Response) => {
   }
 };
 
-
 export const getUserConversations = async (req: Request, res: Response) => {
   try {
     const userId = String(req.params.userId);
+
     const conversations = await prisma.conversation.findMany({
       where: { participantIds: { has: userId } },
-      include: { messages: { orderBy: { timestamp: "desc" }, take: 1 } },
+      include: {
+        messages: {
+          orderBy: { timestamp: "desc" },
+          take: 1,
+        },
+      },
     });
+
     const contacts = await prisma.contact.findMany({
       where: { userId },
       include: { contact: true },
     });
+
+    // 🔹 collect all other participant ids
+    const otherUserIds = conversations
+      .filter(c => c.type === "private")
+      .map(c => c.participantIds.find(id => id !== userId))
+      .filter(Boolean) as string[];
+
+    // 🔹 fetch users once
+    const users = await prisma.user.findMany({
+      where: { id: { in: otherUserIds } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        profileImage: true,
+      },
+    });
+
+    const userMap = new Map(users.map(u => [u.id, u]));
+
     const convUsers = conversations.map((conv) => {
       if (conv.type === "group") {
         return {
           isGroup: true,
           conversationId: conv.id,
-          groupName: (conv as any).name || "Group",
+          groupName: conv.name || "Group",
           participantIds: conv.participantIds,
           lastMessage: conv.messages[0]?.content || null,
         };
       }
 
-      const otherUserId = conv.participantIds.find((id) => id !== userId);
+      const otherUserId = conv.participantIds.find(id => id !== userId);
+      const user = otherUserId ? userMap.get(otherUserId) : null;
+
       return {
         isGroup: false,
         participantId: otherUserId,
-        participantName: otherUserId ? null : "Unknown",
-        participantProfileImage: null,
-        participantEmail: null,
+        participantName: user?.name || "Unknown",
+        participantProfileImage: user?.profileImage || null,
+        participantEmail: user?.email || null,
         lastMessage: conv.messages[0]?.content || null,
         conversationId: conv.id,
       };
     });
+
     const merged = contacts.map((c) => {
-      const existingConv = convUsers.find((u) => !u.isGroup && u.participantId === c.contact.id);
+      const existingConv = convUsers.find(
+        u => !u.isGroup && u.participantId === c.contact.id
+      );
+
       return {
         participantId: c.contact.id,
         participantName: c.contact.name,
@@ -88,34 +120,14 @@ export const getUserConversations = async (req: Request, res: Response) => {
         isGroup: false,
       };
     });
-    const remainingConvs = convUsers
-      .filter((u) => {
-        if (u.isGroup) return true;
-        return !contacts.find((c) => c.contact.id === u.participantId);
-      })
-      .map((u) => {
-        if ((u as any).isGroup) {
-          return {
-            isGroup: true,
-            conversationId: (u as any).conversationId,
-            groupName: (u as any).groupName,
-            participantIds: (u as any).participantIds,
-            lastMessage: (u as any).lastMessage,
-          };
-        }
-        return {
-          participantId: u.participantId,
-          participantName: "Unknown",
-          participantProfileImage: null,
-          participantEmail: null,
-          lastMessage: u.lastMessage,
-          conversationId: u.conversationId,
-          isGroup: false,
-        };
-      });
-    const finalList = [...merged, ...remainingConvs];
 
-    res.json({ conversations: finalList });
+    const remainingConvs = convUsers.filter(
+      u =>
+        u.isGroup ||
+        !contacts.find(c => c.contact.id === u.participantId)
+    );
+
+    res.json({ conversations: [...merged, ...remainingConvs] });
   } catch (err) {
     console.error("Fetch conversations failed:", err);
     res.status(500).json({ message: "Server error" });

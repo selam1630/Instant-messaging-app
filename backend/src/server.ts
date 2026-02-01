@@ -74,34 +74,59 @@ io.on("connection", (socket) => {
     socket.join(conversationId);
     console.log(`👥 Joined conversation: ${conversationId}`);
   });
+socket.on("send_message", async (data) => {
+  try {
+    const { conversationId, senderId, receiverId, content, forwardedFrom, replyToId } = data;
 
-  /* -------- SEND MESSAGE (PRIVATE + GROUP) -------- */
-  socket.on("send_message", async (data) => {
-    try {
-      const { conversationId, senderId, receiverId } = data;
+    if (!conversationId || !senderId || !content) return;
 
-      if (!conversationId || !senderId) return;
+    // Save message in DB first
+    const newMessage = await prisma.message.create({
+      data: {
+        conversationId,
+        senderId,
+        receiverId: receiverId || null,
+        content,
+        forwardedFrom: forwardedFrom || null,
+        replyToId: replyToId || null,
+        status: "sent",
+      },
+    });
 
-      const conversation = await prisma.conversation.findUnique({
-        where: { id: conversationId },
-      });
+    // Fetch the message with sender info
+    const fullMessage = await prisma.message.findUnique({
+      where: { id: newMessage.id },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            profileImage: true,
+          },
+        },
+      },
+    });
 
-      if (!conversation) return;
+    if (!fullMessage) return;
 
-      if (conversation.type === "private") {
-        // private chat
-        emitMessageToUser(receiverId, "receive_message", data);
-        emitMessageToUser(senderId, "receive_message", data);
-      } else {
-        // group chat
-        io.to(conversationId).emit("receive_message", data);
-      }
-    } catch (err) {
-      console.error("send_message error:", err);
+    // Emit
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: conversationId },
+    });
+
+    if (!conversation) return;
+
+    if (conversation.type === "private") {
+      emitMessageToUser(receiverId, "receive_message", fullMessage);
+      emitMessageToUser(senderId, "receive_message", fullMessage);
+    } else {
+      io.to(conversationId).emit("receive_message", fullMessage);
     }
-  });
+  } catch (err) {
+    console.error("send_message error:", err);
+  }
+});
 
-  /* -------- MARK AS READ -------- */
   socket.on("mark_as_read", async ({ messageIds, readerId }) => {
     try {
       await prisma.message.updateMany({

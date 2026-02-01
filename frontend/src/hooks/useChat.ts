@@ -27,9 +27,16 @@ export interface Message {
     userId: string;
     createdAt?: string;
   }[];
+  sender?: {
+    id: string;
+    name: string;
+    profileImage?: string | null;
+  };
+
   replyToId?: string | null;
   forwardedFrom?: string | null;
 }
+
 
 export function useChat(conversationId: string, userId: string) {
   const { socket } = useSocket();

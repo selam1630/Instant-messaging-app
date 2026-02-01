@@ -207,7 +207,6 @@ export default function GroupChatScreen({ route }: GroupChatScreenProps) {
       sendAudioFile(audioFile);
     }
   };
-
   const requestAudioPermission = async () => {
     if (Platform.OS === "android") {
       const granted = await PermissionsAndroid.requestMultiple([PermissionsAndroid.PERMISSIONS.RECORD_AUDIO]);
@@ -269,7 +268,7 @@ const renderMessage = ({ item }: { item: Message }) => {
         />
       )}
 
-      <View style={{ maxWidth: "80%" }}>
+      <View style={{ maxWidth: "90%" }}>
         {/* Sender name */}
         {!isSentByMe && (
           <Text style={styles.senderName}>

@@ -19,9 +19,19 @@ router.get("/messages/:conversationId", async (req, res) => {
 
   try {
     const messages = await prisma.message.findMany({
-      where: { conversationId },
-      orderBy: { timestamp: "asc" },
-    });
+  where: { conversationId },
+  orderBy: { timestamp: "asc" },
+  include: {
+    sender: {
+      select: {
+        id: true,
+        name: true,
+        profileImage: true, // this is exactly your field in User model
+      },
+    },
+  },
+});
+
 
     res.json(messages);
   } catch (err) {
@@ -59,6 +69,15 @@ router.post("/messages", async (req, res) => {
         replyToId: replyToId || null,
         forwardedFrom: forwardedFrom || null,
       },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            profileImage: true,
+          },
+        },
+      },
     });
 
     res.status(201).json(message);
@@ -67,5 +86,6 @@ router.post("/messages", async (req, res) => {
     res.status(500).json({ message: "Failed to save message" });
   }
 });
+
 
 export default router;
