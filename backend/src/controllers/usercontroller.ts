@@ -51,7 +51,6 @@ export const getUserStatus = async (req: Request, res: Response) => {
       where: { id },
       select: { onlineStatus: true, lastSeen: true },
     });
-
     if (!user) {
       console.log("User not found in DB:", id);
       return res.status(404).json({ message: "User not found" });

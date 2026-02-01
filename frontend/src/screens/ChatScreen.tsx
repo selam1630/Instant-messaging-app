@@ -143,7 +143,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
       Alert.alert("Error", "An error occurred during file upload.");
     }
   };
-  
+
   const handleCamera = async (media: "photo" | "video") => {
     const options = { 
       mediaType: media, 
