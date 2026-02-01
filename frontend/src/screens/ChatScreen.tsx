@@ -457,19 +457,10 @@ export default function ChatScreen({ route }: ChatScreenProps) {
   showsVerticalScrollIndicator={false}
 >
   {[
-    // Smileys
     '😀','😁','😂','🤣','😊','😍','😘','😜','🤔','😎','😭','😡','😱','😴',
-
-    // Gestures
     '👍','👎','👏','🙏','🤝','👌','✌️','🤞','🫶',
-
-    // Hearts
     '❤️','🧡','💛','💚','💙','💜','🖤','🤍','💔','💕','💯',
-
-    // Objects
     '🔥','⭐','🌟','🎉','🎊','🎁','⚡','💎','📌','📎',
-
-    // Fun
     '😮','😢','🤯','🤩','🥳','😇','😈','🤡','💀'
   ].map((emoji) => (
     <TouchableOpacity
@@ -511,7 +502,7 @@ export default function ChatScreen({ route }: ChatScreenProps) {
             </TouchableOpacity>
 <TextInput
   ref={inputRef}
-  style={[styles.input, { maxHeight: 100 }]} // Move maxHeight to style
+  style={[styles.input, { maxHeight: 100 }]} 
   value={text}
   onChangeText={setText}
   placeholder="Type a message..."
